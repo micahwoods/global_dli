@@ -94,13 +94,26 @@ output$dliChart1 <- renderPlot(
   make_chart_1(dliDataGet()), res = 96
 )
 
+dirNS <- eventReactive(input$page_23, {
+  north_south(input$map_click)
+}
+)
+
+dirEW <- eventReactive(input$page_23, {
+  east_west(input$map_click)
+}
+)
+
 output$dli_chart_pane1 <- downloadHandler(
   
   filename = function(){
     paste("dli_lat", 
           round(as.numeric(input$map_click[1])),
+          ifelse(as.numeric(input$map_click[2]) > 0, "N", "S"),
           "_lon", 
-          round(as.numeric(input$map_click[2])), ".png", sep = "")
+          round(as.numeric(input$map_click[2])), 
+          ifelse(as.numeric(input$map_click[1]) > 0, "E", "W"), 
+          ".png", sep = "")
   },
   
   content = function(file){

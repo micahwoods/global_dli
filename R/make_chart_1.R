@@ -51,13 +51,25 @@ make_chart_1 <- function(downloaded_power_data) {
   # identify the min and max days of the year
   d3$dayCount <- 1:length(d3$YYYYMMDD)
   
-  minDay <- subset(d3, dli == min(d3$dli))
-  
-  # minDay <- ifelse(length(minDay$date > 1), minDay[1, ], minDay)
-  
-  maxDay <- subset(d3, dli == max(d3$dli))
-  
-  # maxDay <- ifelse(length(maxDay$date > 1), maxDay[1, ], maxDay)
+minDaySet <- subset(d3, dli == min(d3$dli))
+minDay <- minDaySet[1, ]
+#   
+# if (length(minDaySet$date) > 1) {
+#   minDay <- minDaySet[, 1]
+# }
+#   else {
+#     minDay <- minDaySet
+#   }
+#   
+maxDaySet <- subset(d3, dli == max(d3$dli))
+maxDay <- maxDaySet[1, ]
+#   
+# if(length(maxDaySet$date) > 1){
+#                maxDay <-  maxDaySet[1, ]
+# }
+# else{
+#                maxDay <-   maxDaySet
+#   }
   
   weekLabel <- subset(dli_weekly, weekCount == 13)
   

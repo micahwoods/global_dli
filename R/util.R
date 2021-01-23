@@ -19,3 +19,5 @@ library(shinyFeedback)
 
 atc_style <- "color: #fff; background-color: #3f7300; border-color: #fff"
 
+atc2_style <- "color: #fff; background-color: #E8A766; border-color: #fff"
+

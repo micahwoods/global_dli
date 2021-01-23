@@ -37,7 +37,7 @@ ui <- (fluidPage(
            
            actionButton(inputId = "page_23", " Get DLI data", icon("chart-bar"), style = atc_style),
           
-          actionButton(inputId = "page_21", "Back to start", icon("play-circle"), style = atc_style)
+          actionButton(inputId = "page_21", "Back to start", icon("play-circle"), style = atc2_style)
            ),
   
   tabPanel("tab3",
@@ -52,24 +52,24 @@ ui <- (fluidPage(
            
            "Would you like to download this chart?",
            
-           downloadButton("dli_chart_pane1", label = "Download chart"),
+           downloadButton("dli_chart_pane1", label = "Download chart", style = atc2_style),
            
            actionButton("page_34", " See monthly normal DLI", icon("calendar-check"), style = atc_style),
            
-           actionButton("page_32", "Check another location", icon("globe-americas"), style = atc_style),
+           actionButton("page_32", "Check another location", icon("globe-americas"), style = atc2_style),
            
-           actionButton("page_31", "Back to start",  icon("play-circle"), style = atc_style)
+           actionButton("page_31", "Back to start",  icon("play-circle"), style = atc2_style)
            ),
   
   tabPanel("tab4",
            
            "Here's monthly and normal.",
            
-           actionButton("page_42", "Check another location", icon("globe-americas"), style = atc_style),
+           actionButton("page_42", "Check another location", icon("globe-americas"), style = atc2_style),
       
            actionButton("page_45", "App details", icon("info"), style = atc_style),
            
-           actionButton("page_41", "Back to start",  icon("play-circle"), style = atc_style)
+           actionButton("page_41", "Back to start",  icon("play-circle"), style = atc2_style)
   ),
   
   tabPanel("tab5",  
