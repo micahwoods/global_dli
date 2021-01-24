@@ -54,7 +54,7 @@ ui <- (fluidPage(
            
            downloadButton("dli_chart_pane1", label = "Download chart", style = atc2_style),
            
-           actionButton("page_34", " See monthly normal DLI", icon("calendar-check"), style = atc_style),
+           actionButton(inputId = "page_34", " See monthly normal DLI", icon("calendar-check"), style = atc_style),
            
            actionButton("page_32", "Check another location", icon("globe-americas"), style = atc2_style),
            
@@ -64,6 +64,14 @@ ui <- (fluidPage(
   tabPanel("tab4",
            
            "Here's monthly and normal.",
+           
+           tableOutput("click_loc_test"),
+           
+           "There's supposed to be a test text above here if the event reactive happened.",
+           
+           dataTableOutput("monthly"),
+           
+           plotOutput("dliChart2"),
            
            actionButton("page_42", "Check another location", icon("globe-americas"), style = atc2_style),
       

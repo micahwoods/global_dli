@@ -5,12 +5,12 @@
 
 
   rs_get <- function(location) {
+    
     isolate( click <- location )
     
     showNotification("Downloading solar radiation data from NASA POWER")
     
     loc_power <- get_power(community = "AG", 
-                           #  lonlat <- c(101, 14),
                            lonlat = c(click$lng, click$lat),
                            pars = "ALLSKY_SFC_SW_DWN",
                            temporal_average = "DAILY",

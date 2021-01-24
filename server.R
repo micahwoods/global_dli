@@ -85,14 +85,33 @@ server <- function(input, output, session) {
     }
   )
 
+  location <- reactive(
+    map_click_loc(input$map_click)
+  )
+  
+  # get a year of Rs from the location clicked on map
   dliDataGet <- eventReactive(input$page_23, {
     rs_get(input$map_click)
   }
   )
 
+  # make a plot of a year of daily date, based on that point click
 output$dliChart1 <- renderPlot( 
   make_chart_1(dliDataGet()), res = 96
 )
+
+output$click_loc_test <- renderTable( map_click_loc(input$map_click) )
+
+ dliNormalGet <- eventReactive(input$page_34, {
+  rs_normal_get(location())
+ }
+ )
+
+ output$monthly <- renderDataTable(dliNormalGet())
+
+ output$dliChart2 <- renderPlot(
+    make_chart_2(dliNormalGet(), dliDataGet())
+  )
 
 dirNS <- eventReactive(input$page_23, {
   north_south(input$map_click)
