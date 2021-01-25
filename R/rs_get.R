@@ -8,6 +8,15 @@
     
     isolate( click <- location )
     
+    # adjust the longitude when user scrolls beyond +/- 180
+    while (click$lng < -180)  {
+      click$lng <- click$lng + 360
+    }
+    
+    while (click$lng > 180)  {
+      click$lng <- click$lng - 360
+    }
+    
     showNotification("Downloading solar radiation data from NASA POWER")
     
     loc_power <- get_power(community = "AG", 

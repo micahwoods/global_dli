@@ -73,6 +73,8 @@ ui <- (fluidPage(
            
            plotOutput("dliChart2"),
            
+           plotOutput("final"),
+           
            actionButton("page_42", "Check another location", icon("globe-americas"), style = atc2_style),
       
            actionButton("page_45", "App details", icon("info"), style = atc_style),

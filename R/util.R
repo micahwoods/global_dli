@@ -13,9 +13,11 @@ library(lubridate)
 library(zoo)
 library(tidyr)
 library(patchwork)
-library(magick)
 library(mapview)
 library(shinyFeedback)
+library(ggpubr)
+library(png)
+
 
 atc_style <- "color: #fff; background-color: #3f7300; border-color: #fff"
 

@@ -6,7 +6,6 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "user_flow", selected = paste0("tab", i))
   }
   
-  
   observeEvent(input$page_12, switch_page(2))
   observeEvent(input$page_21, switch_page(1))
   observeEvent(input$page_23, switch_page(3))
@@ -27,11 +26,12 @@ server <- function(input, output, session) {
                        group = "Open Street Map (default)") %>%
       addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Imagery") %>%
       addProviderTiles(providers$Esri.WorldTopoMap, group = "ESRI Topo") %>%
+      addProviderTiles(providers$Stamen.TonerLite, group = "Stamen TonerLite") %>%
       addLayersControl(
-        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo"),
+        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo", "Stamen TonerLite"),
         options = layersControlOptions(collapsed = FALSE)) %>%
       addSearchOSM() %>%
-      setView(lng = 100, lat= 13.44, zoom = 6)
+      setView(lng = 100, lat= 13.44, zoom = 5)
   })
 
   # find lat lon of user selected point on the map
@@ -75,15 +75,36 @@ server <- function(input, output, session) {
                     lat1 = round_any(click$lat, 0.5, floor),
                     lat2 = round_any(click$lat, 0.5, ceiling),
                     fill = TRUE, fillColor = "yellow", fillOpacity = 0.4,
-                    weight = 2, color = "yellow", group = "Outline") %>%
+                    weight = 2, color = "yellow") %>%
       
       #  addPopups(click$lng, click$lat, group = "Popup") %>%
       addLayersControl(
-        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo"),
+        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo", "Stamen TonerLite"),
         options = layersControlOptions(collapsed = FALSE)
       )
     }
   )
+  
+  # a map to use as png in my output file
+  map_reactive <- reactive({
+    
+     click <- location()
+     
+     leaflet(height = 540, width = 540) %>% 
+      setView(lng = click[2], lat = click[1], zoom = 8) %>%
+      addProviderTiles(providers$Stamen.Terrain) %>%
+      addRectangles(lng1 = round_any(click[2], 0.5, floor),
+                    lng2 = round_any(click[2], 0.5, ceiling),
+                    lat1 = round_any(click[1], 0.5, floor),
+                    lat2 = round_any(click[1], 0.5, ceiling),
+                    fill = TRUE, fillColor = "yellow", fillOpacity = 0.4,
+                    weight = 2, color = "yellow")
+     
+  })
+  
+  # output$map2 <- renderLeaflet(
+  #   map_reactive()
+  # )
 
   location <- reactive(
     map_click_loc(input$map_click)
@@ -104,14 +125,51 @@ output$click_loc_test <- renderTable( map_click_loc(input$map_click) )
 
  dliNormalGet <- eventReactive(input$page_34, {
   rs_normal_get(location())
+  
  }
  )
+ 
+ # observeEvent(input$page_34, {
+ #   showNotification("Fixing to get map image")
+ #   mapshot(map_reactive(), 
+ #           vwidth = 540,
+ #           vheight = 540,
+ #           file = "temp.png")
+ # })
+ 
 
  output$monthly <- renderDataTable(dliNormalGet())
 
  output$dliChart2 <- renderPlot(
     make_chart_2(dliNormalGet(), dliDataGet())
   )
+ 
+ map_get <- observeEvent(input$user_flow == 'tab4', {
+   req(input$user_flow == 'tab4')
+   showNotification("Fixing to get map image")
+   mapshot(map_reactive(),
+           vwidth = 540,
+           vheight = 540,
+           file = "temp.png")
+   
+   showNotification("Got map image")
+   ## see if I can get an output3
+   
+   showNotification("Make map into a ggplot2 frame")
+   
+   img.background <- readPNG("temp.png")
+   map_plot <- ggplot() +
+     background_image(img.background) + coord_fixed()
+  
+   output$final <- renderPlot(make_chart_1(
+     dliDataGet()) + 
+     (make_chart_2(dliNormalGet(), dliDataGet()) / map_plot) +
+       plot_layout(nrow = 1, widths = c(3, 1)))
+ })
+
+ # I want to get a mapshot, and I know the input
+ # so basically I am going to make a new, square map
+ 
 
 dirNS <- eventReactive(input$page_23, {
   north_south(input$map_click)
