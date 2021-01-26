@@ -1,6 +1,10 @@
 # load libraries
 # for this app
 
+if (is.null(suppressMessages(webshot:::find_phantom()))) {
+  webshot::install_phantomjs()
+}
+
 library(shiny)
 library(leaflet)
 library(nasapower)
