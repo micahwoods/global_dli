@@ -80,7 +80,7 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
     scale_y_continuous(limits = c(0, NA),
                        breaks = seq(0, 70, 10),
                        expand = expansion(mult = c(0, .1))) +
-    scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+    scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
     annotate("label", x = xRow$monthCenter, hjust = custom_hjust, y = xRow$avg_last_year + custom_yjustRecent,
              family = "Roboto Condensed", colour = "#1b9e77", alpha = 0.5,
              label = "Monthly average DLI\nover the past year") +

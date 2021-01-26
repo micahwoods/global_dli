@@ -52,7 +52,7 @@ ui <- (fluidPage(
            
            "Would you like to download this chart?",
            
-           downloadButton("dli_chart_pane1", label = "Download chart", style = atc2_style),
+       #    downloadButton("dli_chart_pane1", label = "Download chart", style = atc2_style),
            
            actionButton(inputId = "page_34", " See monthly normal DLI", icon("calendar-check"), style = atc_style),
            
@@ -76,6 +76,8 @@ ui <- (fluidPage(
            plotOutput("final"),
            
            actionButton("page_42", "Check another location", icon("globe-americas"), style = atc2_style),
+           
+           downloadButton("dli_chart_3pane", label = "Download chart", style = atc_style),
       
            actionButton("page_45", "App details", icon("info"), style = atc_style),
            

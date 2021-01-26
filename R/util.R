@@ -15,8 +15,10 @@ library(tidyr)
 library(patchwork)
 library(mapview)
 library(shinyFeedback)
-library(ggpubr)
+# library(ggpubr)
 library(png)
+library(magick)
+# library(ggimage)
 
 
 atc_style <- "color: #fff; background-color: #3f7300; border-color: #fff"

@@ -90,21 +90,19 @@ server <- function(input, output, session) {
     
      click <- location()
      
-     leaflet(height = 540, width = 540) %>% 
+     leaflet(height = 540, width = 480) %>% 
       setView(lng = click[2], lat = click[1], zoom = 8) %>%
-      addProviderTiles(providers$Stamen.Terrain) %>%
+       addProviderTiles(providers$Stamen.Terrain) %>%
+    #   addProviderTiles(providers$Stamen.TonerLite) %>%
       addRectangles(lng1 = round_any(click[2], 0.5, floor),
                     lng2 = round_any(click[2], 0.5, ceiling),
                     lat1 = round_any(click[1], 0.5, floor),
                     lat2 = round_any(click[1], 0.5, ceiling),
-                    fill = TRUE, fillColor = "yellow", fillOpacity = 0.4,
-                    weight = 2, color = "yellow")
+                    fill = TRUE, fillColor = "orange", fillOpacity = 0.4,
+                    weight = 2, color = "dodgerblue")
      
   })
   
-  # output$map2 <- renderLeaflet(
-  #   map_reactive()
-  # )
 
   location <- reactive(
     map_click_loc(input$map_click)
@@ -129,26 +127,17 @@ output$click_loc_test <- renderTable( map_click_loc(input$map_click) )
  }
  )
  
- # observeEvent(input$page_34, {
- #   showNotification("Fixing to get map image")
- #   mapshot(map_reactive(), 
- #           vwidth = 540,
- #           vheight = 540,
- #           file = "temp.png")
- # })
- 
-
- output$monthly <- renderDataTable(dliNormalGet())
+ # output$monthly <- renderDataTable(dliNormalGet())
 
  output$dliChart2 <- renderPlot(
-    make_chart_2(dliNormalGet(), dliDataGet())
+    make_chart_2(dliNormalGet(), dliDataGet()), res = 96
   )
  
- map_get <- observeEvent(input$user_flow == 'tab4', {
+ map_get <- eventReactive(input$user_flow == 'tab4', {
    req(input$user_flow == 'tab4')
    showNotification("Fixing to get map image")
    mapshot(map_reactive(),
-           vwidth = 540,
+           vwidth = 480,
            vheight = 540,
            file = "temp.png")
    
@@ -157,20 +146,15 @@ output$click_loc_test <- renderTable( map_click_loc(input$map_click) )
    
    showNotification("Make map into a ggplot2 frame")
    
-   img.background <- readPNG("temp.png")
-   map_plot <- ggplot() +
-     background_image(img.background) + coord_fixed()
-  
-   output$final <- renderPlot(make_chart_1(
-     dliDataGet()) + 
-     (make_chart_2(dliNormalGet(), dliDataGet()) / map_plot) +
-       plot_layout(nrow = 1, widths = c(3, 1)))
+   img.background <- readPNG("temp.png", native = TRUE)
+   
+   filename <- "temp.png"
+
  })
 
  # I want to get a mapshot, and I know the input
  # so basically I am going to make a new, square map
  
-
 dirNS <- eventReactive(input$page_23, {
   north_south(input$map_click)
 }
@@ -181,20 +165,24 @@ dirEW <- eventReactive(input$page_23, {
 }
 )
 
-output$dli_chart_pane1 <- downloadHandler(
+output$dli_chart_3pane <- downloadHandler(
   
   filename = function(){
     paste("dli_lat", 
-          round(as.numeric(input$map_click[1])),
-          ifelse(as.numeric(input$map_click[2]) > 0, "N", "S"),
+          round(abs(location()[1])),
+          ifelse(location()[1] > 0, "N", "S"),
           "_lon", 
-          round(as.numeric(input$map_click[2])), 
-          ifelse(as.numeric(input$map_click[1]) > 0, "E", "W"), 
+          round(abs(location()[2])), 
+          ifelse(location()[2] > 0, "E", "W"), 
           ".png", sep = "")
   },
   
   content = function(file){
-    save_plot(file, plot = make_chart_1(dliDataGet()), base_asp = 1.78, base_height = 4, scale = 2)
+    save_plot(file, plot = make_chart_1( dliDataGet()) + 
+        (make_chart_2(dliNormalGet(), dliDataGet()) / make_chart_3(map_get())) +
+        plot_layout(nrow = 1, widths = c(3, 1)) +
+        plot_annotation(theme = theme(plot.background = element_rect(fill = "#f7ffed", color = NA))), 
+        base_asp = 1.78, scale = 2)
   }
 )
 
