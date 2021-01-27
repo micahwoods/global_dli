@@ -2,6 +2,10 @@
 
 make_chart_1 <- function(downloaded_power_data) {
   
+  id1 <- showNotification("Building chart of DLI for the past year", 
+                         duration = NULL, closeButton = FALSE, type = "warning")
+  on.exit(removeNotification(id1), add = TRUE)
+  
   downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE)
   
   # convert by AJ 198x article
@@ -95,8 +99,6 @@ maxDay <- maxDaySet[1, ]
                        maxDay$DD,
                        maxDay$monthName,
                        maxDay$YEAR)
-  
-  showNotification("Making chart of last year's DLI")
   
   # plot dli
   p <- ggplot(data = d3, aes(x = date, y = dli))

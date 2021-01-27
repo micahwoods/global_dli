@@ -2,6 +2,10 @@
 
 make_chart_2 <- function(normal_data, downloaded_power_data) {
   
+  id3 <- showNotification("Building chart of climatological normal DLI", 
+                          duration = NULL, closeButton = FALSE, type = "warning")
+  on.exit(removeNotification(id3), add = TRUE)
+  
   power_C <- normal_data
   
   ### next section comes from start of make_chart_1 also
@@ -57,8 +61,6 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
   
   click <- data_frame(lon = as.numeric(power_C$LON),
                       lat = as.numeric(power_C$LAT))
-  
-  showNotification("Making chart of monthly actual vs. normal")
   
   p2 <- ggplot(data = dli_monthly_plot, aes(x = monthCenter, y = avg_last_year))
   monthPlot <- p2 + theme_cowplot(font_family = "Roboto Condensed") +

@@ -2,6 +2,9 @@
 
 make_chart_3 <- function(x) {
  
+  id5 <- showNotification("Preparing chart for download", 
+                          duration = NULL, closeButton = FALSE, type = "warning")
+  on.exit(removeNotification(id5), add = TRUE)
   # map_plot <- ggdraw() + 
   #   draw_image((x), scale = 1) +
   #   theme(axis.title.x = element_blank(),

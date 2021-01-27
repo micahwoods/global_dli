@@ -17,7 +17,10 @@
       click$lng <- click$lng - 360
     }
     
-    showNotification("Downloading solar radiation data from NASA POWER")
+    
+    id <- showNotification("Downloading satellite global solar radiation data (daily) from NASA POWER", 
+                     duration = NULL, closeButton = FALSE, type = "warning")
+    on.exit(removeNotification(id), add = TRUE)
     
     loc_power <- get_power(community = "AG", 
                            lonlat = c(click$lng, click$lat),
@@ -25,6 +28,5 @@
                            temporal_average = "DAILY",
                            dates = c(today() - days(370), today() - days(1)))
     
-    #showNotification("NASA POWER data downloaded")
   }
   

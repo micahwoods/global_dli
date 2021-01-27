@@ -10,7 +10,9 @@
     
     click <- location
     
-    showNotification("Downloading climatological normal solar radiation data PART1 !!")
+    id2 <- showNotification("Downloading satellite global solar radiation data (climatological normal) from NASA POWER", 
+                           duration = NULL, closeButton = FALSE, type = "warning")
+    on.exit(removeNotification(id2), add = TRUE)
     
     power_C <- get_power(community = "AG", 
                          lonlat = c(click[2], click[1]),
