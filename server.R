@@ -49,13 +49,13 @@ server <- function(input, output, session) {
   observeEvent(input$page_15, switch_page(5))
   observeEvent(input$page_51, switch_page(1))
   
-  observeEvent(input$restart, {
-    refresh()
-  })
-  
-  observeEvent(input$page_51, {
-    refresh()
-  })
+  # observeEvent(input$restart, {
+  #   refresh()
+  # })
+  # 
+  # observeEvent(input$page_51, {
+  #   refresh()
+  # })
   
   # output$file1_ui <- renderUI({
   #   input$restart ## Create a dependency with the reset button
@@ -75,24 +75,29 @@ server <- function(input, output, session) {
   #     setView(lng = location()[2], lat = location()[1], zoom = 4) 
   # })
 
-
-    leaflet() %>% 
-      addProviderTiles(providers$OpenStreetMap,
-                       options = providerTileOptions(noWrap = FALSE),
-                       group = "Open Street Map (default)") %>%
-      addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Imagery") %>%
-      addProviderTiles(providers$Esri.WorldTopoMap, group = "ESRI Topo") %>%
-      addProviderTiles(providers$Stamen.TonerLite, group = "Stamen TonerLite") %>%
-      addLayersControl(
-        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo", "Stamen TonerLite"),
-        options = layersControlOptions(collapsed = TRUE)) %>%
-      addSearchOSM() %>%
-      setView(lng = 100, lat = 14, zoom = 5) 
+ 
   
-
-
-
-  output$map <- renderLeaflet({
+  
+  
+  # 
+  # 
+  #   leaflet() %>% 
+  #     addProviderTiles(providers$OpenStreetMap,
+  #                      options = providerTileOptions(noWrap = FALSE),
+  #                      group = "Open Street Map (default)") %>%
+  #     addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Imagery") %>%
+  #     addProviderTiles(providers$Esri.WorldTopoMap, group = "ESRI Topo") %>%
+  #     addProviderTiles(providers$Stamen.TonerLite, group = "Stamen TonerLite") %>%
+  #     addLayersControl(
+  #       baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo", "Stamen TonerLite"),
+  #       options = layersControlOptions(collapsed = TRUE)) %>%
+  #     addSearchOSM() %>%
+  #     setView(lng = 100, lat = 14, zoom = 5) 
+  # 
+  # 
+  # 
+  # 
+   output$map <- renderLeaflet({
 
     leaflet() %>%
       addProviderTiles(providers$OpenStreetMap,

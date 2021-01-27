@@ -13,10 +13,10 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
   downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE)
   
   # convert by AJ 198x article
-  downloaded_power_data$dli <- downloaded_power_data$Rs * 2.04
+#  downloaded_power_data$dli <- downloaded_power_data$Rs * 2.04
   
   # comvert by recent Hort Science
-  #downloaded_power_data$dli <- downloaded_power_data$Rs * 0.45 * 4.48
+  downloaded_power_data$dli <- downloaded_power_data$Rs * 0.45 * 4.48
   
   d3 <- subset(downloaded_power_data, YYYYMMDD < (today() - days(6)))
   
@@ -50,6 +50,18 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
   
   dli_monthly_plot <- merge(dli_monthly, normalDLI, by.x = "MM", by.y = "monthNum")
   
+  # get the total difference of annual mean
+  diffFromNormal <- mean(dli_monthly$avg_last_year) - power_C$ANN * 0.45 * 4.48
+  
+  percentDiff <- abs(diffFromNormal / power_C$ANN) * 100
+  
+  more_or_less <- ifelse(diffFromNormal > 0, "more", "less")
+  
+  label_norm <- sprintf("The average DLI for the past year was %s, %s%% %s than normal", 
+                       formatC(mean(dli_monthly$avg_last_year), digits = 1, format = "f"),
+                       formatC(percentDiff, digits = 2, format = "f"),
+                       more_or_less)
+  
   # for labeling the lines, find the largest monthly difference
   dli_monthly_plot$diff <- dli_monthly_plot$avg_last_year - dli_monthly_plot$dli_climatology
   dli_monthly_plot$abs_diff <- abs(dli_monthly_plot$diff)
@@ -61,6 +73,8 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
   
   click <- data_frame(lon = as.numeric(power_C$LON),
                       lat = as.numeric(power_C$LAT))
+  
+  monthlyYLabel <- ifelse(min(dli_monthly$avg_last_year) < 5, 7, 3)
   
   p2 <- ggplot(data = dli_monthly_plot, aes(x = monthCenter, y = avg_last_year))
   monthPlot <- p2 + theme_cowplot(font_family = "Roboto Condensed") +
@@ -82,14 +96,19 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
     scale_y_continuous(limits = c(0, NA),
                        breaks = seq(0, 70, 10),
                        expand = expansion(mult = c(0, .1))) +
-    scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
+    scale_x_date(date_breaks = "2 months", date_labels = "%b %Y") +
     annotate("label", x = xRow$monthCenter, hjust = custom_hjust, y = xRow$avg_last_year + custom_yjustRecent,
-             family = "Roboto Condensed", colour = "#1b9e77", alpha = 0.5,
+             family = "Roboto Condensed", colour = "#1b9e77", alpha = 0.4, size = 3,
              label = "Monthly average DLI\nover the past year") +
     annotate("label", x = xRow$monthCenter, hjust = custom_hjust, y = xRow$dli_climatology + custom_yjustClimate,
-             family = "Roboto Condensed", colour = "#d95f02", alpha = 0.5,
-             label = "Climatological\nnormal DLI")
+             family = "Roboto Condensed", colour = "#d95f02", alpha = 0.4, size = 3,
+             label = "Climatological\nnormal DLI") +
+    annotate("label", x = today() - months(6), y = monthlyYLabel, family = "Roboto Condensed",
+             alpha = 0.5, size = 3, colour = "grey15",
+             label = label_norm, parse = FALSE)
   
   monthPlot
 }
   
+
+

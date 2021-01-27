@@ -40,7 +40,7 @@ ui <- (fluidPage(
   
   shinyFeedback::useShinyFeedback(),
   
-  useShinyjs(),
+  # useShinyjs(),
   
   titlePanel("DLI anywhere: daily light integral at any location"),
 
@@ -101,7 +101,7 @@ mainPanel(width = 10,
           
           tags$strong(textOutput("text_location")),
           
-          p("Make sure you've selected a location. Click the button below to download satellite data for that location."),
+          p("Click the button below to download satellite data for that location."),
           
           actionButton(inputId = "page_23", " Get DLI data", icon("chart-bar"), style = atc_style),
           
@@ -148,6 +148,9 @@ mainPanel(width = 10,
            
            )
       )
-)
+
+),
+hr(),
+tags$small(paste("Last updated on", today(), "by Micah Woods"))
 )
 )
