@@ -198,7 +198,7 @@ maxDay <- maxDaySet[1, ]
     annotate("label", x = min(dli_weekly2$date), hjust = 0, y = 6,
              family = "Roboto Condensed", size = 3.5, colour = "grey15", alpha = 0.4,
              label = "Horizontal bars show\nweekly average DLI", label.size = 0) +
-    draw_image(logo_file, x = median(d3$YYYYMMDD) + days(45), y = median(d3$dli), 
+    draw_image(logo_file, x = median(d3$YYYYMMDD) + days(45), y = (max(d3$dli) + min(d3$dli)) / 2, 
       scale = 100)
     
  dli
