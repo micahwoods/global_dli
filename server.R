@@ -21,7 +21,6 @@ server <- function(input, output, session) {
                switch_page(3)
                })
   
-  
   observe({
     if(is.null(input$map_click) && input$page_23 > 0)
       showModal(modalDialog(
@@ -267,8 +266,10 @@ output$dli_chart_3pane <- downloadHandler(
   },
   
   content = function(file){
-    save_plot(file, plot = make_chart_1( dliDataGet()) + 
-        (make_chart_2(dliNormalGet(), dliDataGet()) / make_chart_3(map_get())) +
+    save_plot(file, plot = (
+        make_chart_1( dliDataGet()) | 
+        (make_chart_2(dliNormalGet(), dliDataGet()) / make_chart_3(map_get()))
+        ) +
         plot_layout(nrow = 1, widths = c(3, 1)) +
         plot_annotation(theme = theme(plot.background = element_rect(fill = "#f7ffed", color = NA))), 
         base_asp = 1.78, base_height = 1.8, scale = 4)

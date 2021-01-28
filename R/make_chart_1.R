@@ -6,6 +6,8 @@ make_chart_1 <- function(downloaded_power_data) {
                          duration = NULL, closeButton = FALSE, type = "warning")
   on.exit(removeNotification(id1), add = TRUE)
   
+  #downloaded_power_data <- loc_power
+  
   downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE)
   # convert by AJ 198x article
  # downloaded_power_data$dli <- downloaded_power_data$Rs * 2.04
@@ -34,6 +36,37 @@ make_chart_1 <- function(downloaded_power_data) {
     summarise(avg = mean(dli, na.rm = TRUE),
               start = min(date),
               end = max(date))
+  
+  # count the weeks in each level
+  dli_weekly$dli_level <- ifelse(dli_weekly$avg < 10, "0 to 10",
+                                 ifelse(dli_weekly$avg >= 10 & dli_weekly$avg < 20, "10 to 20",
+                                        ifelse(dli_weekly$avg >= 20 & dli_weekly$avg < 30, "20 to 30",
+                                               ifelse(dli_weekly$avg >= 30 & dli_weekly$avg < 40, "30 to 40",
+                                                      ifelse(dli_weekly$avg >= 40 & dli_weekly$avg < 50, "40 to 50",
+                                                             ifelse(dli_weekly$avg >= 50 & dli_weekly$avg < 60, "50 to 60", 
+                                                                    "60 to 70"))))))
+  
+  dli_table_data <- dli_weekly %>%
+    group_by(dli_level) %>%
+    tally()
+  
+  colnames(dli_table_data) <- c("DLI range", "Weeks")
+  
+  lat <- d3$LAT[1]
+  # set the table location to be approx middle of the summer in temperate places
+  
+  if(lat >= 0) {
+    table_x_loc <- d3 %>%
+      filter(DOY == 170) %>%
+      slice_min(order_by = YYYYMMDD)
+    
+   
+  } else { 
+    table_x_loc <- d3 %>%
+      filter(DOY == 360) %>%
+      slice_min(order_by = YYYYMMDD)
+  }
+                                                                  
   
   dli_weekly2 <- pivot_longer(dli_weekly, cols = start:end, values_to = "date")
   
@@ -116,16 +149,24 @@ maxDay <- maxDaySet[1, ]
                        maxDay$monthName,
                        maxDay$YEAR)
   
+  # I want to add my watermark here
+  logo_file <- image_read("www/atc_t.png")
+
   # plot dli
   p <- ggplot(data = d3, aes(x = date, y = dli))
   dli <- p + theme_cowplot(font_family = "Roboto Condensed") +
     background_grid() +
+    annotate(geom = "table", x = table_x_loc$YYYYMMDD, y = 0,
+             family = "Roboto Condensed", size = 3,
+             fill = "#f7ffed",
+             alpha = 0.5,
+             label = dli_table_data) +
     geom_line(data = dli_weekly2,
               aes(x = date, y = avg, 
                   group = weekCount, colour = level3040),
               size = 1) +
     scale_y_continuous(limits = c(0, NA),
-                       breaks = seq(0, 60, 10),
+                       breaks = seq(0, 70, 10),
                        expand = expansion(mult = c(0, .1))) +
     scale_color_brewer(palette = "Paired") +
     geom_point(aes(colour = dliColour), 
@@ -142,35 +183,23 @@ maxDay <- maxDaySet[1, ]
                           formatC(abs(d3$LAT), digits = 1, format = "f"),  "° ", north_south, " & ",
                           formatC(abs(d3$LON), digits = 1, format = "f"), "° ", east_west, sep = ""),
          caption = "These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate\nApplied Science Program: power.larc.nasa.gov using the 'nasapower' R package by Adam Sparks") +
-    annotate("label", x = minDay$date, hjust = min_hjust, y = minDay$dli + 5, alpha = 0.4,
+    annotate("label", x = minDay$date, hjust = min_hjust, y = minDay$dli + 9, alpha = 0.4,
              family = "Roboto Condensed", size = 3.5, colour = "grey15",
-             label = label_min, parse = TRUE) +
+             label = label_min, parse = TRUE, label.size = 0) +
     annotate("segment", x = minDay$date + days(min_arrow_start), xend = minDay$date + days(min_arrow_end), 
-             y = minDay$dli + 3.8, yend = minDay$dli + 0.3, size = 0.5, colour = "grey15",
+             y = minDay$dli + 7.8, yend = minDay$dli + 0.3, size = 0.5, colour = "grey15",
              arrow=arrow(type = 'closed', length = unit(0.25, 'cm'))) +
     annotate("label", x = maxDay$date, hjust = max_hjust, y = maxDay$dli + 5, alpha = 0.4,
              family = "Roboto Condensed", size = 3.5, colour = "grey15",
-             label = label_max, parse = TRUE) +
+             label = label_max, parse = TRUE, label.size = 0) +
     annotate("segment", x = maxDay$date + days(max_arrow_start), xend = maxDay$date + days(max_arrow_end), 
              y = maxDay$dli + 3.7, yend = maxDay$dli + 0.3, size = 0.5, colour = "grey15",
              arrow=arrow(type = 'closed', length = unit(0.25, 'cm'))) +
-    annotate("label", x = weekLabelMin$date, hjust = weekLabelMin$hjustSet, y = weekLabelMin$avg + 2, alpha = 0.4,
-             family = "Roboto Condensed", size = 3.5, colour = "grey15",
-             label =  weekLabelMinText, parse = TRUE) +
-    annotate("label", x = weekLabelMax$date, hjust = weekLabelMax$hjustSet, y = weekLabelMax$avg + 2, alpha = 0.4,
-             family = "Roboto Condensed", size = 3.5, colour = "grey15",
-             label =  weekLabelMaxText, parse = TRUE) +
-    annotate("label", x = min(dli_weekly2$date), hjust = 0, y = 3,
+    annotate("label", x = min(dli_weekly2$date), hjust = 0, y = 6,
              family = "Roboto Condensed", size = 3.5, colour = "grey15", alpha = 0.4,
-             label = "Horizontal bars show weekly average DLI")
+             label = "Horizontal bars show\nweekly average DLI", label.size = 0) +
+    draw_image(logo_file, x = median(d3$YYYYMMDD) + days(45), y = median(d3$dli), 
+      scale = 100)
     
-    # annotate("label", x = weekLabel$start - days(81), hjust = 0, y = weekLabel$avg - 2,
-    #          family = "Roboto Condensed", size = 3.5, colour = "grey15", alpha = 0.4,
-    #          label = "Horizontal bars show\nweekly average DLI") +
-    # annotate("segment", x = weekLabel$start - days(26), xend = weekLabel$start - days(1), 
-    #          y = weekLabel$avg - 2.5, yend = weekLabel$avg, size = 0.5, colour = "grey15",
-    #          arrow=arrow(type = 'closed', length = unit(0.25, 'cm'))) 
-  
-  dli
+ dli
 }
-  

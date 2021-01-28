@@ -43,38 +43,86 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
   dli_monthly <- d3 %>%
     group_by(monthCenter, MM) %>%
     summarise(avg_last_year = mean(dli, na.rm = TRUE),
-              min = min(dli, na.rm = TRUE),
-              max = max(dli, na.rm = TRUE))
+              n = length(dli))
   
   dli_monthly$custom_order <- 1:length(dli_monthly$MM)
   
   dli_monthly_plot <- merge(dli_monthly, normalDLI, by.x = "MM", by.y = "monthNum")
   
   # get the total difference of annual mean
-  diffFromNormal <- mean(dli_monthly$avg_last_year) - power_C$ANN * 0.45 * 4.48
+  diffFromNormal <- mean(d3$dli) - (power_C$ANN * 0.45 * 4.48)
   
   percentDiff <- abs(diffFromNormal / power_C$ANN) * 100
   
-  more_or_less <- ifelse(diffFromNormal > 0, "more", "less")
+  more_or_less <- ifelse(diffFromNormal > 0, "above", "less than")
   
-  label_norm <- sprintf("The average DLI for the past year was %s, %s%% %s than normal", 
+  label_norm <- sprintf("Average DLI (green) for the\npast year was %s,\n%s%% %s normal (orange)", 
                        formatC(mean(dli_monthly$avg_last_year), digits = 1, format = "f"),
-                       formatC(percentDiff, digits = 2, format = "f"),
+                       formatC(percentDiff, digits = 2, format = "g"),
                        more_or_less)
-  
-  # for labeling the lines, find the largest monthly difference
-  dli_monthly_plot$diff <- dli_monthly_plot$avg_last_year - dli_monthly_plot$dli_climatology
-  dli_monthly_plot$abs_diff <- abs(dli_monthly_plot$diff)
-  xRow <- subset(dli_monthly_plot, abs_diff == max(abs_diff))
-  
-  custom_hjust <- ifelse(xRow$custom_order > 6, 1, 0)
-  custom_yjustRecent <- ifelse(xRow$diff > 0, 10, -10)
-  custom_yjustClimate <- ifelse(xRow$diff < 0, 10, -10)
   
   click <- data_frame(lon = as.numeric(power_C$LON),
                       lat = as.numeric(power_C$LAT))
   
-  monthlyYLabel <- ifelse(min(dli_monthly$avg_last_year) < 5, 7, 3)
+  # this puts the x location of the text about avg DLI in past year
+  # to be in the summer season, so presumably below the DLI lines
+  # and for normal label, in winter, presumably above
+  
+  if(click$lat >= 0) {
+    label_x_loc <- dli_monthly_plot %>%
+      filter(MM == 6) %>%
+      slice_min(order_by = monthCenter)
+    
+    normal_label_x <- dli_monthly_plot %>%
+      filter(MM == 12) %>%
+      slice_max(order_by = monthCenter)
+  } else { 
+    label_x_loc <- dli_monthly_plot %>%
+      filter(MM == 12) %>%
+      slice_min(order_by = monthCenter)
+    
+    normal_label_x <- dli_monthly_plot %>%
+      filter(MM == 6) %>%
+      slice_max(order_by = monthCenter)
+  }
+  
+    
+    x_loc_hjust <- ifelse(label_x_loc$custom_order < 4, 0,
+                          ifelse(label_x_loc$custom_order > 8, 1, 0.5))
+    
+    normal_label_hjust <- ifelse(normal_label_x$custom_order < 4, 0,
+                                 ifelse(normal_label_x$custom_order > 8, 1, 0.5))
+    
+    # get min and max months over the past year but exclude incomplete ones
+    max_month <- dli_monthly_plot %>%
+      filter(n >= 28) %>%
+      slice_max(order_by = avg_last_year, with_ties = FALSE, n = 1) 
+    
+    min_month <- dli_monthly_plot %>%
+      filter(n >= 28) %>%
+      slice_min(order_by = avg_last_year, with_ties = FALSE, n = 1) 
+    
+    label_max <- sprintf("Max average DLI of\n%s in %s %s",
+                          formatC(max_month$avg_last_year, digits = 1, format = "f"),
+                          month(max_month$monthCenter, label = TRUE),
+                          year(max_month$monthCenter))
+    
+    label_min <- sprintf("Min average DLI of\n%s in %s %s",
+                         formatC(min_month$avg_last_year, digits = 1, format = "f"),
+                         month(min_month$monthCenter, label = TRUE),
+                         year(min_month$monthCenter))
+    
+    max_month_hjust <- ifelse(max_month$custom_order < 4, 0,
+                          ifelse(max_month$custom_order > 8, 1, 0.5))
+    
+    min_month_hjust <- ifelse(min_month$custom_order < 4, 0,
+                              ifelse(min_month$custom_order > 8, 1, 0.5))
+    
+    min_month_y <- ifelse(min_month$avg_last_year < 8, 
+                          min_month$avg_last_year + 6,
+                          min_month$avg_last_year - 6)
+    
+    min_month_days_shift <- ifelse(min_month$custom_order <= 6, -20, 20)
   
   p2 <- ggplot(data = dli_monthly_plot, aes(x = monthCenter, y = avg_last_year))
   monthPlot <- p2 + theme_cowplot(font_family = "Roboto Condensed") +
@@ -97,15 +145,20 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
                        breaks = seq(0, 70, 10),
                        expand = expansion(mult = c(0, .1))) +
     scale_x_date(date_breaks = "2 months", date_labels = "%b %Y") +
-    annotate("label", x = xRow$monthCenter, hjust = custom_hjust, y = xRow$avg_last_year + custom_yjustRecent,
-             family = "Roboto Condensed", colour = "#1b9e77", alpha = 0.4, size = 3,
-             label = "Monthly average DLI\nover the past year") +
-    annotate("label", x = xRow$monthCenter, hjust = custom_hjust, y = xRow$dli_climatology + custom_yjustClimate,
-             family = "Roboto Condensed", colour = "#d95f02", alpha = 0.4, size = 3,
-             label = "Climatological\nnormal DLI") +
-    annotate("label", x = today() - months(6), y = monthlyYLabel, family = "Roboto Condensed",
-             alpha = 0.5, size = 3, colour = "grey15",
-             label = label_norm, parse = FALSE)
+    annotate("label", x = normal_label_x$monthCenter, hjust = normal_label_hjust,
+             y = max_month$avg_last_year - 2,
+             family = "Roboto Condensed", colour = "#d95f02", alpha = 0.4, size = 2.5,
+             label = "Climatological\nnormal DLI", label.size = 0) +
+    annotate("label", x = label_x_loc$monthCenter, hjust = x_loc_hjust, vjust = 0,
+             y = 0, family = "Roboto Condensed",
+             alpha = 0.4, size = 2.5, colour = "grey15",
+             label = label_norm, parse = FALSE, label.size = 0) +
+    annotate("label", x = max_month$monthCenter, hjust = max_month_hjust, y = max_month$avg_last_year + 6,
+             family = "Roboto Condensed", colour = "#1b9e77", alpha = 0.4, size = 2.5,
+             label = label_max, label.size = 0) +
+    annotate("label", x = min_month$monthCenter + days(min_month_days_shift), hjust = min_month_hjust, y = min_month_y,
+             family = "Roboto Condensed", colour = "#1b9e77", alpha = 0.4, size = 2.5,
+             label = label_min, label.size = 0) 
   
   monthPlot
 }

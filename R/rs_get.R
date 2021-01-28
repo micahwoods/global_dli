@@ -17,7 +17,6 @@
       click$lng <- click$lng - 360
     }
     
-    
     id <- showNotification("Downloading satellite global solar radiation data (daily) from NASA POWER", 
                      duration = NULL, closeButton = FALSE, type = "warning")
     on.exit(removeNotification(id), add = TRUE)

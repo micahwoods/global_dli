@@ -22,7 +22,8 @@ library(shinyFeedback)
 library(png)
 library(magick)
 library(shinycssloaders)
-library(shinyjs)
+# library(shinyjs)
+library(ggpmisc)
 
 
 

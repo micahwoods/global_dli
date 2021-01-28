@@ -136,8 +136,14 @@ mainPanel(width = 10,
          
            withSpinner(plotOutput("dliChart2"), color = "#3f7300"),
            
-           downloadButton("dli_chart_3pane", label = "Download DLI chart", style = atc_style)
-    
+           downloadButton("dli_chart_3pane", label = "Download DLI chart", style = atc_style),
+           
+           br(),
+           
+           p("If you want to download data or see even more options, see the", a("POWER Data Access Viewer", href="https://power.larc.nasa.gov/data-access-viewer/"), "or the", tags$code(a("nasapower", href="https://docs.ropensci.org/nasapower/index.html")), "R package."),
+           
+           actionButton(inputId = "page_31", " Back to start", icon("play-circle"), style = atc2_style)
+           
   ),
   
   tabPanel("tab5",  
@@ -151,6 +157,6 @@ mainPanel(width = 10,
 
 ),
 hr(),
-tags$small(paste("Last updated on", today(), "by Micah Woods"))
+tags$small("Last updated on 2021-01-28 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
 )
 )
