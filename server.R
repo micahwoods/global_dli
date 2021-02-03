@@ -198,6 +198,7 @@ server <- function(input, output, session) {
   dliDataGet <- eventReactive(input$page_23, {
    req(input$map_click) 
     rs_get(input$map_click) 
+  #  browser()
   }
   )
 

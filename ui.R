@@ -157,6 +157,6 @@ mainPanel(width = 10,
 
 ),
 hr(),
-tags$small("Last updated on 2021-01-28 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
+tags$small("Last updated on 2021-02-03 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
 )
 )

@@ -10,7 +10,8 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
   
   ### next section comes from start of make_chart_1 also
   
-  downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE)
+  # do the rule = 2 here to fill NA at the end
+  downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE, rule = 2)
   
   # convert by AJ 198x article
 #  downloaded_power_data$dli <- downloaded_power_data$Rs * 2.04
@@ -120,7 +121,7 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
     
     min_month_y <- ifelse(min_month$avg_last_year < 8, 
                           min_month$avg_last_year + 6,
-                          min_month$avg_last_year - 6)
+                          min_month$avg_last_year - 4)
     
     min_month_days_shift <- ifelse(min_month$custom_order <= 6, -20, 20)
   

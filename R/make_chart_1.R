@@ -6,9 +6,15 @@ make_chart_1 <- function(downloaded_power_data) {
                          duration = NULL, closeButton = FALSE, type = "warning")
   on.exit(removeNotification(id1), add = TRUE)
   
-  #downloaded_power_data <- loc_power
   
-  downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE)
+  ### debug
+  
+  # downloaded_power_data <- loc_power
+  
+  ###
+  
+  # rule = 2 here fills in the trailing na.rm
+  downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE, rule = 2)
   # convert by AJ 198x article
  # downloaded_power_data$dli <- downloaded_power_data$Rs * 2.04
   
