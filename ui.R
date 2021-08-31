@@ -4,8 +4,6 @@ ui <- (fluidPage(
   
   tags$head(includeHTML(("google_analytics.html"))),
   
-  
-  
   tags$script(HTML(
     "document.body.style.backgroundColor = '#f7ffed';"
   )),
@@ -157,6 +155,6 @@ mainPanel(width = 10,
 
 ),
 hr(),
-tags$small("Last updated on 2021-02-03 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
+tags$small("Last updated on 2021-09-01 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
 )
 )
