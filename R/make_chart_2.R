@@ -1,4 +1,4 @@
-# function to make a plot part one
+## function to make a second plot
 
 make_chart_2 <- function(normal_data, downloaded_power_data) {
   
@@ -9,7 +9,10 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
   power_C <- normal_data
   
   ### next section comes from start of make_chart_1 also
-  
+  ## the missing data for ALL_SKY_SFC_SW_DWN are -999. Set these to NA
+  downloaded_power_data$ALLSKY_SFC_SW_DWN <- ifelse(downloaded_power_data$ALLSKY_SFC_SW_DWN == -999.00,
+                                                    NA,
+                                                    downloaded_power_data$ALLSKY_SFC_SW_DWN)
   # do the rule = 2 here to fill NA at the end
   downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE, rule = 2)
   
@@ -62,8 +65,8 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
                        formatC(percentDiff, digits = 2, format = "g"),
                        more_or_less)
   
-  click <- data_frame(lon = as.numeric(power_C$LON),
-                      lat = as.numeric(power_C$LAT))
+  click <- tibble(lon = as.numeric(power_C$LON),
+                  lat = as.numeric(power_C$LAT))
   
   # this puts the x location of the text about avg DLI in past year
   # to be in the summer season, so presumably below the DLI lines

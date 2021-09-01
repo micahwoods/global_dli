@@ -1,8 +1,4 @@
-# function to get the data and make a chart
-# basically I think this needs to be done together
-# because I don't figure out how to download the data once and re-use it between
-# sessions, anyway I can try it, maybe reactive makes it work perfect
-
+# function to get the monthly normal data
 
   rs_normal_get <- function(location) {
     
@@ -17,8 +13,7 @@
     power_C <- get_power(community = "AG", 
                          lonlat = c(click[2], click[1]),
                          pars = "ALLSKY_SFC_SW_DWN",
-                         temporal_average = "CLIMATOLOGY")
+                         temporal_api = "climatology")
     
-   # showNotification("Climatological normal monthly data obtained")
   }
   

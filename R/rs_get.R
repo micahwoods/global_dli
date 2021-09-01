@@ -1,8 +1,4 @@
-# function to get the data and make a chart
-# basically I think this needs to be done together
-# because I don't figure out how to download the data once and re-use it between
-# sessions, anyway I can try it, maybe reactive makes it work perfect
-
+# function to get the data 
 
   rs_get <- function(location) {
     
@@ -19,9 +15,9 @@
     
     ### debug
     
-    # click <- data.frame(lng = -123.3257,
-    #                    lat = 44.4185)
-    ###
+    ## click <- data.frame(lng = 99.6,
+    ##                     lat = 7.5)
+    ##
     
     id <- showNotification("Downloading satellite global solar radiation data (daily) from NASA POWER", 
                      duration = NULL, closeButton = FALSE, type = "warning")
@@ -30,7 +26,7 @@
     loc_power <- get_power(community = "AG", 
                            lonlat = c(click$lng, click$lat),
                            pars = "ALLSKY_SFC_SW_DWN",
-                           temporal_average = "DAILY",
+                           temporal_api = "daily",
                            dates = c(today() - days(370), today() - days(1)))
     
   }

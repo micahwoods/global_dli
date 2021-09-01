@@ -1,7 +1,8 @@
-# server, v1 was 348 lines, this meant to be much shorter
+## server, v1 was 348 lines, this meant to be much shorter
 
 server <- function(input, output, session) {
   
+  ## page switiching function, got this from Wickham's Mastering Shiny book
   switch_page <- function(i) {
     updateTabsetPanel(session, "user_flow", selected = paste0("tab", i))
   }
@@ -14,10 +15,6 @@ server <- function(input, output, session) {
   observeEvent(input$page_23, {
    
                req(input$map_click)
-           
-    # validate(
-    #   need(is.null(input$map_click), "Please choose a location on the map first.")
-    # )
                switch_page(3)
                })
   
@@ -30,14 +27,6 @@ server <- function(input, output, session) {
         footer = NULL
       ))
   })
-  # observeEvent(input$n,
-  #              shinyFeedback::feedbackWarning(
-  #                "n", 
-  #                input$n %% 2 != 0,
-  #                "Please select an even number"
-  #              )  
-  # )
-  # output$half <- renderText(input$n / 2)
   
   observeEvent(input$page_34, switch_page(4))
   observeEvent(input$page_32, switch_page(2))
@@ -48,54 +37,8 @@ server <- function(input, output, session) {
   observeEvent(input$page_15, switch_page(5))
   observeEvent(input$page_51, switch_page(1))
   
-  # observeEvent(input$restart, {
-  #   refresh()
-  # })
-  # 
-  # observeEvent(input$page_51, {
-  #   refresh()
-  # })
-  
-  # output$file1_ui <- renderUI({
-  #   input$restart ## Create a dependency with the reset button
-  #   leafletOutput("map")
-  # })
-  
-  
-  # observeEvent(input$restart, {
-  #   
-  #   leafletProxy("map") %>%
-  #     setView(lng = location()[2], lat = location()[1], zoom = 4) 
-  # })
-  # 
-  # observeEvent(input$page_51, {
-  #   
-  #   leafletProxy("map") %>%
-  #     setView(lng = location()[2], lat = location()[1], zoom = 4) 
-  # })
-
  
-  
-  
-  
-  # 
-  # 
-  #   leaflet() %>% 
-  #     addProviderTiles(providers$OpenStreetMap,
-  #                      options = providerTileOptions(noWrap = FALSE),
-  #                      group = "Open Street Map (default)") %>%
-  #     addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Imagery") %>%
-  #     addProviderTiles(providers$Esri.WorldTopoMap, group = "ESRI Topo") %>%
-  #     addProviderTiles(providers$Stamen.TonerLite, group = "Stamen TonerLite") %>%
-  #     addLayersControl(
-  #       baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo", "Stamen TonerLite"),
-  #       options = layersControlOptions(collapsed = TRUE)) %>%
-  #     addSearchOSM() %>%
-  #     setView(lng = 100, lat = 14, zoom = 5) 
-  # 
-  # 
-  # 
-  # 
+ 
    output$map <- renderLeaflet({
 
     leaflet() %>%
@@ -113,7 +56,7 @@ server <- function(input, output, session) {
 
   })
   
-  # Zoom in on user location if given
+  ## Zoom in on user location if given
   observe({
     if(!is.null(input$lat)) {
       map <- leafletProxy("map")
@@ -124,13 +67,13 @@ server <- function(input, output, session) {
     }
     })
   
-  # find lat lon of user selected point on the map
-  # and place a transparent rectangle over it with 0.5 degree lat lon boundaries
+  ## find lat lon of user selected point on the map
+  ## and place a transparent rectangle over it with 0.5 degree lat lon boundaries
   observeEvent(input$map_click, {
     
     click <- (input$map_click)
     
-    # adjust the longitude when user scrolls beyond +/- 180
+    ## adjust the longitude when user scrolls beyond +/- 180
     while (click$lng < -180)  {
       click$lng <- click$lng + 360
     }
@@ -139,7 +82,7 @@ server <- function(input, output, session) {
       click$lng <- click$lng - 360
     }
     
-    # label as north or south or east or west for chart output
+    ## label as north or south or east or west for chart output
     north_south <- ifelse(click$lat > 0, "N", "S")
     east_west <- ifelse(click$lng > 0, "E", "W")
     
@@ -157,7 +100,7 @@ server <- function(input, output, session) {
     proxy %>% clearPopups() %>%
       clearShapes() %>%
       addPopups(click$lng, click$lat, text) %>%
-      # add here the half-degree boundary box overlay
+      ## add here the half-degree boundary box overlay
       addRectangles(lng1 = round_any(click$lng, 0.5, floor),
                     lng2 = round_any(click$lng, 0.5, ceiling),
                     lat1 = round_any(click$lat, 0.5, floor),
@@ -171,7 +114,7 @@ server <- function(input, output, session) {
     }
   )
   
-  # a map to use as png in my output file
+  ## a map to use as png in my output file
   map_reactive <- reactive({
     
      click <- location()
@@ -179,7 +122,6 @@ server <- function(input, output, session) {
      leaflet(height = 540, width = 540) %>% 
       setView(lng = click[2], lat = click[1], zoom = 8) %>%
        addProviderTiles(providers$Stamen.Terrain) %>%
-    #   addProviderTiles(providers$Stamen.TonerLite) %>%
       addRectangles(lng1 = round_any(click[2], 0.5, floor),
                     lng2 = round_any(click[2], 0.5, ceiling),
                     lat1 = round_any(click[1], 0.5, floor),
@@ -189,20 +131,18 @@ server <- function(input, output, session) {
      
   })
   
-
   location <- reactive(
     map_click_loc(input$map_click)
   )
   
-  # get a year of Rs from the location clicked on map
+  ## get a year of Rs from the location clicked on map
   dliDataGet <- eventReactive(input$page_23, {
    req(input$map_click) 
     rs_get(input$map_click) 
-  #  browser()
   }
   )
 
-  # make a plot of a year of daily date, based on that point click
+ ## make a plot of a year of daily data, based on that point click
 output$dliChart1 <- renderPlot( 
   make_chart_1(dliDataGet()), res = 96
 )
@@ -211,12 +151,9 @@ output$click_loc_test <- renderTable( map_click_loc(input$map_click) )
 
  dliNormalGet <- eventReactive(input$page_34, {
   rs_normal_get(location())
-  
  }
  )
  
- # output$monthly <- renderDataTable(dliNormalGet())
-
  output$dliChart2 <- renderPlot(
     make_chart_2(dliNormalGet(), dliDataGet()), res = 96
   )
@@ -233,16 +170,11 @@ output$click_loc_test <- renderTable( map_click_loc(input$map_click) )
            vheight = 540,
            file = "temp.png")
    
-   ## see if I can get an output3
-   
    img.background <- readPNG("temp.png", native = TRUE)
    
    filename <- "temp.png"
 
  })
-
- # I want to get a mapshot, and I know the input
- # so basically I am going to make a new, square map
  
 dirNS <- eventReactive(input$page_23, {
   north_south(input$map_click)

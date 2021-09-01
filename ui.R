@@ -1,4 +1,4 @@
-# ui
+## ui for the Global DLI app
 
 ui <- (fluidPage( 
   
@@ -15,7 +15,10 @@ ui <- (fluidPage(
         }
 
         '))),
-  
+
+  ## if the user allows geolocation then this will move the map to the user's location at start
+  ## if location is not allowed, the map starts at a default location
+  ## this geolocation code is from https://github.com/AugustT/shiny_geolocation
   tags$script('
               $(document).ready(function () {
               navigator.geolocation.getCurrentPosition(onSuccess, onError);
@@ -37,25 +40,31 @@ ui <- (fluidPage(
               '),
   
   shinyFeedback::useShinyFeedback(),
-  
-  # useShinyjs(),
-  
+    
   titlePanel("DLI anywhere: daily light integral at any location"),
 
 sidebarLayout(
-    sidebarPanel(width = 2,
-                 
+    sidebarPanel(width = 2,               
                  id = "sidebar",
-                 
-                 actionButton(inputId = "restart", " Back to start", icon("play-circle"), style = atc2_style),
+  
+                 actionButton(inputId = "restart",
+                              " Back to start",
+                              icon("play-circle"),
+                              style = atc2_style),
                  
                  p(),
                  
-                 actionButton("details", " App details", icon("info"), style = atc2_style),
+                 actionButton("details",
+                              " App details",
+                              icon("info"),
+                              style = atc2_style),
                  
                  p(),
                  
-                 actionButton("par_atc", "PAR info @ ATC", icon("cloud-sun"), style = atc2_style,
+                 actionButton("par_atc",
+                              "PAR info @ ATC",
+                              icon("cloud-sun"),
+                              style = atc2_style,
                               onclick = "window.open('https://www.asianturfgrass.com/tag/light/', '_blank')"),
                  
                  p(),
@@ -64,6 +73,8 @@ sidebarLayout(
                    img(src = "atc.png", height = 80))
                  
                  ),
+
+    ## The user has a one way path to download a chart for a location they select by clicking on the map.
 mainPanel(width = 10,
   tabsetPanel(
   id = "user_flow",
@@ -95,8 +106,7 @@ mainPanel(width = 10,
           
           leafletOutput("map"),
           
-       #   uiOutput('file1_ui'),
-          
+          ## this text shows the latitude and the longitude of the selected point
           tags$strong(textOutput("text_location")),
           
           p("Click the button below to download satellite data for that location."),
@@ -105,13 +115,8 @@ mainPanel(width = 10,
           
           br()
           
-  ),
-           
-#  actionButton("page_12", "See map", icon("globe-americas"), style = atc_style)
- # ),
-  
- # tabPanel("tab2",
-  
+  ),           
+
   tabPanel("tab3",
            
            tags$h4("Step 2"),

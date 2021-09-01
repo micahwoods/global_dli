@@ -1,0 +1,11 @@
+* About this app
+
+The global DLI app summarizes the past year of daily light integral (DLI) data for a user-selected location and then allows the user to download a chart of those data. The app is online at:
+
+[[https://asianturfgrass.shinyapps.io/global_dli/]]
+
+The app uses the [[https://docs.ropensci.org/nasapower/index.html][nasapower]] R package to get global solar radiation data from the [[https://power.larc.nasa.gov/][NASA POWER]] agroclimatology dataset.
+
+More information is available in the [[dli_details.md][dli_details.md]] file.
+
+Please report any issues at [[https://github.com/micahwoods/global_dli/issues]]. 

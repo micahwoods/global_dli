@@ -22,10 +22,8 @@ library(shinyFeedback)
 library(png)
 library(magick)
 library(shinycssloaders)
-# library(shinyjs)
 library(ggpmisc)
-
-
+library(tibble)
 
 atc_style <- "color: #fff; background-color: #3f7300; border-color: #fff"
 

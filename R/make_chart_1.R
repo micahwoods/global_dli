@@ -1,4 +1,4 @@
-# function to make a plot part one
+## function to make a plot part one
 
 make_chart_1 <- function(downloaded_power_data) {
   
@@ -9,16 +9,21 @@ make_chart_1 <- function(downloaded_power_data) {
   
   ### debug
   
-  # downloaded_power_data <- loc_power
+  ## downloaded_power_data <- loc_power
   
   ###
   
-  # rule = 2 here fills in the trailing na.rm
+  ## the missing data for ALL_SKY_SFC_SW_DWN are -999. Set these to NA
+  downloaded_power_data$ALLSKY_SFC_SW_DWN <- ifelse(downloaded_power_data$ALLSKY_SFC_SW_DWN == -999.00,
+                                                    NA,
+                                                    downloaded_power_data$ALLSKY_SFC_SW_DWN)
+  
+  ## rule = 2 here fills in the trailing na.rm
   downloaded_power_data$Rs <- na.approx(downloaded_power_data$ALLSKY_SFC_SW_DWN, na.rm = FALSE, rule = 2)
   # convert by AJ 198x article
  # downloaded_power_data$dli <- downloaded_power_data$Rs * 2.04
   
-  # comvert by recent Hort Science
+  # convert by recent Hort Science
   downloaded_power_data$dli <- downloaded_power_data$Rs * 0.45 * 4.48
   
   d3 <- subset(downloaded_power_data, YYYYMMDD < (today() - days(6)))
@@ -59,17 +64,20 @@ make_chart_1 <- function(downloaded_power_data) {
   colnames(dli_table_data) <- c("DLI range", "Weeks")
   
   lat <- d3$LAT[1]
-  # set the table location to be approx middle of the summer in temperate places
   
+  ## set the table location to be approx middle of the summer in temperate places
+  ## I notice for Thailand this sets it already into the rainy season
+  ## try moving the table forward by 30 days, from original 170/360
+
   if(lat >= 0) {
     table_x_loc <- d3 %>%
-      filter(DOY == 170) %>%
+      filter(DOY == 140) %>%
       slice_min(order_by = YYYYMMDD)
     
    
   } else { 
     table_x_loc <- d3 %>%
-      filter(DOY == 360) %>%
+      filter(DOY == 330) %>%
       slice_min(order_by = YYYYMMDD)
   }
                                                                   
@@ -95,23 +103,9 @@ make_chart_1 <- function(downloaded_power_data) {
   
 minDaySet <- subset(d3, dli == min(d3$dli))
 minDay <- minDaySet[1, ]
-#   
-# if (length(minDaySet$date) > 1) {
-#   minDay <- minDaySet[, 1]
-# }
-#   else {
-#     minDay <- minDaySet
-#   }
-#   
+
 maxDaySet <- subset(d3, dli == max(d3$dli))
 maxDay <- maxDaySet[1, ]
-#   
-# if(length(maxDaySet$date) > 1){
-#                maxDay <-  maxDaySet[1, ]
-# }
-# else{
-#                maxDay <-   maxDaySet
-#   }
   
   weekLabelMin <- dli_weekly2 %>%
     slice_min(order_by = avg, with_ties = FALSE, n = 1)
@@ -130,8 +124,7 @@ maxDay <- maxDaySet[1, ]
   
   weekLabelMax$hjustSet <- ifelse(weekLabelMax$weekCount < 10, 0,
                                    ifelse(weekLabelMax$weekCount > 42, 1, 0.5))
-  
-  
+    
   min_hjust <- ifelse(minDay$dayCount < 183, 0, 1)
   max_hjust <- ifelse(maxDay$dayCount < 183, 0, 1)
   
@@ -188,7 +181,7 @@ maxDay <- maxDaySet[1, ]
          subtitle = paste("for the past 52 weeks at ",
                           formatC(abs(d3$LAT), digits = 1, format = "f"),  "° ", north_south, " & ",
                           formatC(abs(d3$LON), digits = 1, format = "f"), "° ", east_west, sep = ""),
-         caption = "These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate\nApplied Science Program: power.larc.nasa.gov using the 'nasapower' R package by Adam Sparks") +
+         caption = "These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate Applied\nScience Program: power.larc.nasa.gov using the 'nasapower' R package by Adam Sparks. This chart generated at asianturfgrass.shinyapps.io/global_dli/") +
     annotate("label", x = minDay$date, hjust = min_hjust, y = minDay$dli + 9, alpha = 0.4,
              family = "Roboto Condensed", size = 3.5, colour = "grey15",
              label = label_min, parse = TRUE, label.size = 0) +
