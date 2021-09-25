@@ -25,6 +25,10 @@ There are [different ways to deal with weeks](https://en.wikipedia.org/wiki/ISO_
 
 ### For more information
 
+- The code for this app is at <https://github.com/micahwoods/global_dli>.
+
+- Please file any bug reports or feature requests at <https://github.com/micahwoods/global_dli/issues>.
+
 - Posts tagged [light](https://www.asianturfgrass.com/tag/light/) on the ATC website
 
 - [NASA Power](https://power.larc.nasa.gov/)
