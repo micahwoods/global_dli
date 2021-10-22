@@ -86,7 +86,7 @@ mainPanel(width = 10,
            tags$ul(
              tags$li("Quick app summary: generates a summary chart of PAR for the past year at any location."), 
              tags$li("This app gets satellite data of global solar radiation on 0.5° latitude by 0.5° longitude grid from the",
-                     a("NASA POWER Agroclimatology dataset", href="https://power.larc.nasa.gov/docs/methodology/communities/ag/"),
+                     a("NASA POWER Agroclimatology dataset", href="https://power.larc.nasa.gov/"),
                      "using the",
                      tags$code(tags$a("nasapower", href='https://docs.ropensci.org/nasapower/index.html')),
                      "R package by",
@@ -160,6 +160,6 @@ mainPanel(width = 10,
 
 ),
 hr(),
-tags$small("Last updated on 2021-09-01 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
+tags$small("Last updated on 2021-10-07 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
 )
 )
