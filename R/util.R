@@ -7,10 +7,11 @@ if (is.null(suppressMessages(webshot:::find_phantom()))) {
 
 library(shiny)
 library(leaflet)
+library(leaflet.extras)
 library(nasapower)
 library(ggplot2)
 library(cowplot)
-library(leaflet.esri)
+## library(leaflet.esri)
 library(plyr)
 library(dplyr)
 library(lubridate)

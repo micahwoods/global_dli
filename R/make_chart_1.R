@@ -59,9 +59,10 @@ make_chart_1 <- function(downloaded_power_data) {
   
   dli_table_data <- dli_weekly %>%
     group_by(dli_level) %>%
-    tally()
-  
+    tally() 
+
   colnames(dli_table_data) <- c("DLI range", "Weeks")
+
   
   lat <- d3$LAT[1]
   

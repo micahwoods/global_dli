@@ -37,8 +37,6 @@ server <- function(input, output, session) {
   observeEvent(input$page_15, switch_page(5))
   observeEvent(input$page_51, switch_page(1))
   
- 
- 
    output$map <- renderLeaflet({
 
     leaflet() %>%
@@ -47,9 +45,9 @@ server <- function(input, output, session) {
                        group = "Open Street Map (default)") %>%
       addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Imagery") %>%
       addProviderTiles(providers$Esri.WorldTopoMap, group = "ESRI Topo") %>%
-      addProviderTiles(providers$Stamen.TonerLite, group = "Stamen TonerLite") %>%
+     ## addProviderTiles(providers$Stamen.TonerLite, group = "Stamen TonerLite") %>%
       addLayersControl(
-        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo", "Stamen TonerLite"),
+        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo"),
         options = layersControlOptions(collapsed = TRUE)) %>%
       addSearchOSM() %>%
       setView(lng = 100, lat= 13.44, zoom = 5)
@@ -120,8 +118,8 @@ server <- function(input, output, session) {
      click <- location()
      
      leaflet(height = 540, width = 540) %>% 
-      setView(lng = click[2], lat = click[1], zoom = 8) %>%
-       addProviderTiles(providers$Stamen.Terrain) %>%
+      setView(lng = click[2], lat = click[1], zoom = 9) %>%
+       addProviderTiles(providers$Esri.WorldStreetMap) %>%
       addRectangles(lng1 = round_any(click[2], 0.5, floor),
                     lng2 = round_any(click[2], 0.5, ceiling),
                     lat1 = round_any(click[1], 0.5, floor),
