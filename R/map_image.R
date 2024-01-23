@@ -3,7 +3,7 @@
 
 map_image <- function(location) {
 
-            mapshot(proxy,
+            mapshot2(proxy,
                  remove_controls = c("zoomControl", "layersControl", "homeButton", "scaleBar",
                                  "drawToolbar", "easyButton", "searchControl"),
                   file = outfile)

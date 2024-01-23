@@ -1,6 +1,8 @@
 ## server, v1 was 348 lines, this meant to be much shorter
 
+
 server <- function(input, output, session) {
+  
   
   ## page switiching function, got this from Wickham's Mastering Shiny book
   switch_page <- function(i) {
@@ -106,7 +108,7 @@ server <- function(input, output, session) {
                     fill = TRUE, fillColor = "orange", fillOpacity = 0.5,
                     weight = 2, color = "#3f7300") %>%
       addLayersControl(
-        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo", "Stamen TonerLite"),
+        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo"),
         options = layersControlOptions(collapsed = TRUE)
       )
     }
@@ -158,21 +160,28 @@ output$click_loc_test <- renderTable( map_click_loc(input$map_click) )
  
  map_get <- eventReactive(input$user_flow == 'tab4', {
    req(input$user_flow == 'tab4')
-   
-   id4 <- showNotification("Getting location image for chart output", 
-                           duration = NULL, closeButton = FALSE, type = "warning")
-   on.exit(removeNotification(id4), add = TRUE)
-   
-   mapshot(map_reactive(),
-           vwidth = 540,
-           vheight = 540,
-           file = "temp.png")
-   
-   img.background <- readPNG("temp.png", native = TRUE)
-   
-   filename <- "temp.png"
+
+   # id4 <- showNotification("Getting location image for chart output",
+   #                         duration = NULL, closeButton = FALSE, type = "warning")
+   # on.exit(removeNotification(id4), add = TRUE)
+
+   # png_fl = tempfile(fileext = ".png")
+   # 
+   # mapshot2(map_reactive(),
+   #          file = png_fl)
+           # vwidth = 540,
+           # vheight = 540,
+           # file = "temp.png")
+
+ ##  img.background <- readPNG("temp.png", native = TRUE)
+ ##  img.background <- readPNG(png_fl,
+  ##                           native = TRUE)
+
+  ## filename <- "temp.png"
 
  })
+
+
  
 dirNS <- eventReactive(input$page_23, {
   north_south(input$map_click)

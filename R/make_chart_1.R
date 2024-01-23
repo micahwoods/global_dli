@@ -164,7 +164,7 @@ maxDay <- maxDaySet[1, ]
     geom_line(data = dli_weekly2,
               aes(x = date, y = avg, 
                   group = weekCount, colour = level3040),
-              size = 1) +
+              linewidth = 1) +
     scale_y_continuous(limits = c(0, NA),
                        breaks = seq(0, 70, 10),
                        expand = expansion(mult = c(0, .1))) +
@@ -187,13 +187,13 @@ maxDay <- maxDaySet[1, ]
              family = "Roboto Condensed", size = 3.5, colour = "grey15",
              label = label_min, parse = TRUE, label.size = 0) +
     annotate("segment", x = minDay$date + days(min_arrow_start), xend = minDay$date + days(min_arrow_end), 
-             y = minDay$dli + 7.8, yend = minDay$dli + 0.3, size = 0.5, colour = "grey15",
+             y = minDay$dli + 7.8, yend = minDay$dli + 0.3, linewidth = 0.5, colour = "grey15",
              arrow=arrow(type = 'closed', length = unit(0.25, 'cm'))) +
     annotate("label", x = maxDay$date, hjust = max_hjust, y = maxDay$dli + 5, alpha = 0.4,
              family = "Roboto Condensed", size = 3.5, colour = "grey15",
              label = label_max, parse = TRUE, label.size = 0) +
     annotate("segment", x = maxDay$date + days(max_arrow_start), xend = maxDay$date + days(max_arrow_end), 
-             y = maxDay$dli + 3.7, yend = maxDay$dli + 0.3, size = 0.5, colour = "grey15",
+             y = maxDay$dli + 3.7, yend = maxDay$dli + 0.3, linewidth = 0.5, colour = "grey15",
              arrow=arrow(type = 'closed', length = unit(0.25, 'cm'))) +
     annotate("label", x = min(dli_weekly2$date), hjust = 0, y = 6,
              family = "Roboto Condensed", size = 3.5, colour = "grey15", alpha = 0.4,
