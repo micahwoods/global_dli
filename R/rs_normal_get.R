@@ -1,19 +1,15 @@
-# function to get the monthly normal data
+# get the monthly climatological normal PAR from NASA POWER
+#
+# location: numeric c(lat, lon), as returned by map_click_loc()
 
-  rs_normal_get <- function(location) {
-    
-   # browser()
-    
-    click <- location
-    
-    id2 <- showNotification("Downloading satellite global solar radiation data (climatological normal) from NASA POWER", 
-                           duration = NULL, closeButton = FALSE, type = "warning")
-    on.exit(removeNotification(id2), add = TRUE)
-    
-    power_C <- get_power(community = "AG", 
-                         lonlat = c(click[2], click[1]),
-                         pars = "ALLSKY_SFC_SW_DWN",
-                         temporal_api = "climatology")
-    
-  }
-  
+rs_normal_get <- function(location) {
+
+  id2 <- showNotification("Downloading satellite PAR data (climatological normal) from NASA POWER",
+                          duration = NULL, closeButton = FALSE, type = "warning")
+  on.exit(removeNotification(id2), add = TRUE)
+
+  get_power(community = "AG",
+            lonlat = c(location[2], location[1]),
+            pars = "ALLSKY_SFC_PAR_TOT",
+            temporal_api = "climatology")
+}

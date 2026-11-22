@@ -7,11 +7,13 @@ The units are moles of photons per square meter per day --- mol m<sup>-2</sup> d
 
 ### Where these data come from
 
-The [NASA POWER](https://power.larc.nasa.gov/docs/methodology/communities/ag/) agroclimatology dataset provides satellite data of many useful solar and meteorological parameters on a 0.5° x 0.5° grid, including **all sky insolation incident on a horizontal surface**, which is global solar radiation (R<sub>s</sub>). On a daily basis, the units for R<sub>s</sub> are megajoules per square meter per day, MJ m<sup>-2</sup> d<sup>-1</sup>. 
+The [NASA POWER](https://power.larc.nasa.gov/docs/methodology/communities/ag/) agroclimatology dataset provides satellite data of many useful solar and meteorological parameters on a 0.5° x 0.5° grid. One of these is **all sky surface total PAR** (from CERES SYN1deg), in megajoules of PAR per square meter per day, MJ m<sup>-2</sup> d<sup>-1</sup>.
 
-There is a consistent proportion of PAR in R<sub>s</sub>. I've often used a conversion factor of 2.04 (multiplying R<sub>s</sub> by 2.04 to get the DLI in mol m<sup>-2</sup> d<sup>-1</sup>) based on [Meek et al. (1984)](https://doi.org/10.2134/agronj1984.00021962007600060018x). In this app, I've used the same conversion as was used by [Faust and Logan (2018)](https://dx.doi.org/10.21273/HORTSCI13144-18), "which assumes that 45% of the solar radiation is in the photosynthetically active radiation (PAR, 400–700 nm) region and 4.48 μmol J<sup>−1</sup> is the conversion from radiometric to quantum units." That works out to be a 2.01 conversion factor, rather than 2.04. Basically, you can multiply R<sub>s</sub> by 2 and be really close to the DLI.
+To convert PAR from energy to photons, I multiply it by 4.48 mol of photons per MJ of PAR, the conversion used by [Faust and Logan (2018)](https://dx.doi.org/10.21273/HORTSCI13144-18). So the DLI in this app is the NASA POWER PAR multiplied by 4.48. The climatological normal DLI is calculated the same way, from the NASA POWER PAR climatology (2001–2025).
 
-The data I show in this app as DLI are the NASA POWER **all sky insolation incident on a horizontal surface** (R<sub>s</sub>) data multiplied by 0.45 and then by 4.48.
+There's one complication. NASA POWER's PAR data are usually about 3 months behind, while its **all sky insolation incident on a horizontal surface**, which is global solar radiation (R<sub>s</sub>), is only about a week behind. For the most recent days, which have R<sub>s</sub> but no PAR yet, I estimate PAR as R<sub>s</sub> multiplied by the PAR fraction for that location at the same time of year, one year earlier: the total PAR divided by the total R<sub>s</sub> over the 61 days centred on that date a year before. The chart caption says from which date the DLI is estimated this way.
+
+Why not just use a fixed fraction? PAR is often given as about 45% of R<sub>s</sub>. I've often used a conversion factor of 2.04 (multiplying R<sub>s</sub> by 2.04 to get the DLI in mol m<sup>-2</sup> d<sup>-1</sup>) based on [Meek et al. (1984)](https://doi.org/10.2134/agronj1984.00021962007600060018x), and Faust and Logan used 0.45 × 4.48 = 2.01. That's close on average, but the fraction varies. In the NASA POWER data it ranges from about 0.44 in deserts to 0.48 in the humid tropics, and from about 0.42 to 0.54 from one day to the next, because cloudy days have more diffuse light, which has more PAR in it. When I tested the estimate by hiding 83 days of known PAR at 7 locations in 4 seasons, the estimated PAR over those days was within 1.1% on average (3.3% at worst), compared with 3.2% on average for a fixed 0.45.
 
 ### How I got the data
 
@@ -19,7 +21,7 @@ I used the [`nasapower`](https://docs.ropensci.org/nasapower/index.html) package
 
 This is a [Shiny](https://shiny.rstudio.com/) app and I used the [`leaflet`](https://cran.r-project.org/web/packages/leaflet/index.html) package for the map in the app.
 
-Any missing data have been approximated using the `na.approx` function from the `zoo` package. I haven't seen a lot of missing values but that is run after the data are downloaded. The NASA POWER global solar radiation data are usually available up to about 5 days prior to the current date. This app is getting data from 370 days ago until 6 days ago, which is a total of 364 days, and is exactly 52 weeks. Those 364 days (52 weeks) of data are shown on the charts.
+Any missing data have been approximated using the `na.approx` function from the `zoo` package. Only short gaps (up to 3 days in a row) are filled this way. The NASA POWER global solar radiation data are usually available up to about a week before the current date, and the charts show the 364 days (exactly 52 weeks) ending on the most recent day with data.
 
 There are [different ways to deal with weeks](https://en.wikipedia.org/wiki/ISO_week_date), and what I have done in this app is calculate them as 7 days periods that begin with the first day in the 364 days of data shown.
 

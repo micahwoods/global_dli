@@ -1,55 +1,46 @@
-# load libraries
-# for this app
-# 
-# if (is.null(suppressMessages(webshot:::find_phantom()))) {
-#   webshot::install_phantomjs()
-# }
-
-# ## locally set browser path
-# Sys.setenv(CHROMOTE_CHROME = "/usr/bin/brave-browser")
-# 
-# ## setup to be able to use mapshot2 based on
-# ## https://community.rstudio.com/t/how-to-properly-configure-google-chrome-on-shinyapps-io-because-of-webshot2/109020/4
-# message(curl::curl_version()) # check curl is installed
-# if (identical(Sys.getenv("R_CONFIG_ACTIVE"), "shinyapps")) {
-#   chromote::set_default_chromote_object(
-#     chromote::Chromote$new(chromote::Chrome$new(
-#       args = c("--disable-gpu",
-#                "--no-sandbox",
-#                "--disable-dev-shm-usage", # required bc the target easily crashes
-#                c("--force-color-profile", "srgb"))
-#     ))
-#   )
-# }
-
+# libraries, constants and small helpers for the Global DLI app
+#
+# Shiny sources every file in R/ before ui.R and server.R.
+# sf and terra are used via sf:: / terra:: (needed by maptiles) and are
+# deliberately not attached, so they don't mask dplyr/tidyr functions.
 
 library(shiny)
-# library(pagedown)
-# library(chromote)
-# library(curl)
 library(leaflet)
-library(leaflet.extras)
+library(leaflet.extras)   # addSearchOSM()
 library(nasapower)
 library(ggplot2)
 library(cowplot)
-## library(leaflet.esri)
-library(plyr)
 library(dplyr)
 library(lubridate)
 library(zoo)
 library(tidyr)
 library(patchwork)
-library(mapview)
-## library(webshot)
-## library(webshot2)
 library(shinyFeedback)
-library(png)
 library(magick)
+library(maptiles)         # basemap tiles for the location map (make_chart_3)
 library(shinycssloaders)
 library(ggpmisc)
 library(tibble)
 
-atc_style <- "color: #fff; background-color: #3f7300; border-color: #fff"
-
+atc_style  <- "color: #fff; background-color: #3f7300; border-color: #fff"
 atc2_style <- "color: #fff; background-color: #730B29; border-color: #fff"
 
+app_bg <- "#f7ffed"
+
+## DLI (mol m-2 d-1) from NASA POWER PAR (MJ m-2 d-1): 4.48 mol photons per
+## MJ of PAR, as in Faust and Logan (2018)
+mol_per_MJ_par <- 4.48
+
+## PAR fraction of global solar radiation, used only when a location has no
+## PAR data at all to work out its own ratio from
+par_fraction_default <- 0.45
+
+## wrap longitudes to [-180, 180] (leaflet allows scrolling past the date line)
+wrap_lng <- function(lng) ((lng + 180) %% 360) - 180
+
+## "13.8° N & 100.5° E" style label
+format_latlon <- function(lat, lon, sep = " & ") {
+  paste0(formatC(abs(lat), digits = 1, format = "f"), "° ", ifelse(lat >= 0, "N", "S"),
+         sep,
+         formatC(abs(lon), digits = 1, format = "f"), "° ", ifelse(lon >= 0, "E", "W"))
+}

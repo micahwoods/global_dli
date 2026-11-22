@@ -1,220 +1,142 @@
-## server, v1 was 348 lines, this meant to be much shorter
-
+## server for the Global DLI app
 
 server <- function(input, output, session) {
-  
-  
-  ## page switiching function, got this from Wickham's Mastering Shiny book
+
+  ## page switching, from Wickham's Mastering Shiny
   switch_page <- function(i) {
     updateTabsetPanel(session, "user_flow", selected = paste0("tab", i))
   }
-  
-  observeEvent(input$details, switch_page(5))
+
   observeEvent(input$restart, switch_page(1))
-  observeEvent(input$page_12, switch_page(2))
-  observeEvent(input$page_21, switch_page(1))
-  
+  observeEvent(input$page_31, switch_page(1))
+  observeEvent(input$page_51, switch_page(1))
+  observeEvent(input$details, switch_page(5))
+  observeEvent(input$page_15, switch_page(5))
+  observeEvent(input$page_34, switch_page(4))
+
+  ## step 1 -> 2 needs a location
   observeEvent(input$page_23, {
-   
-               req(input$map_click)
-               switch_page(3)
-               })
-  
-  observe({
-    if(is.null(input$map_click) && input$page_23 > 0)
+    if (is.null(location())) {
       showModal(modalDialog(
         title = "Please select a location on the map first",
         "Click the map to choose a 0.5° by 0.5° grid from which satellite data will be downloaded.",
         easyClose = TRUE,
         footer = NULL
       ))
+    } else {
+      switch_page(3)
+    }
   })
-  
-  observeEvent(input$page_34, switch_page(4))
-  observeEvent(input$page_32, switch_page(2))
-  observeEvent(input$page_31, switch_page(1))
-  observeEvent(input$page_42, switch_page(2))
-  observeEvent(input$page_41, switch_page(1))
-  observeEvent(input$page_45, switch_page(5))
-  observeEvent(input$page_15, switch_page(5))
-  observeEvent(input$page_51, switch_page(1))
-  
-   output$map <- renderLeaflet({
 
+  ## ---- map ------------------------------------------------------------
+
+  ## basemap choices: layer-control label = tile provider, used for both the
+  ## interactive map and the map in the downloaded chart (make_chart_3)
+  base_tiles <- c("Open Street Map" = "OpenStreetMap",
+                  "Satellite"       = "Esri.WorldImagery",
+                  "Nat Geo"         = "Esri.NatGeoWorldMap")
+  base_groups <- names(base_tiles)
+
+  output$map <- renderLeaflet({
     leaflet() %>%
-      addProviderTiles(providers$OpenStreetMap,
-                       options = providerTileOptions(noWrap = FALSE),
-                       group = "Open Street Map (default)") %>%
-      addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Imagery") %>%
-      addProviderTiles(providers$Esri.WorldTopoMap, group = "ESRI Topo") %>%
-     ## addProviderTiles(providers$Stamen.TonerLite, group = "Stamen TonerLite") %>%
-      addLayersControl(
-        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo"),
-        options = layersControlOptions(collapsed = TRUE)) %>%
+      addProviderTiles(base_tiles[[1]], group = base_groups[1]) %>%
+      addProviderTiles(base_tiles[[2]], group = base_groups[2]) %>%
+      addProviderTiles(base_tiles[[3]], group = base_groups[3]) %>%
+      addLayersControl(baseGroups = base_groups,
+                       options = layersControlOptions(collapsed = TRUE)) %>%
       addSearchOSM() %>%
-      setView(lng = 100, lat= 13.44, zoom = 5)
-
+      setView(lng = 100, lat = 13.44, zoom = 5)
   })
-  
-  ## Zoom in on user location if given
-  observe({
-    if(!is.null(input$lat)) {
-      map <- leafletProxy("map")
-      dist <- 1
-      lat <- input$lat
-      lng <- input$long
-      map %>% fitBounds(lng - dist, lat - dist, lng + dist, lat + dist)
-    }
-    })
-  
-  ## find lat lon of user selected point on the map
-  ## and place a transparent rectangle over it with 0.5 degree lat lon boundaries
+
+  ## zoom to the user's location if the browser shares it (see ui.R)
+  observeEvent(input$lat, {
+    dist <- 1
+    leafletProxy("map") %>%
+      fitBounds(input$long - dist, input$lat - dist, input$long + dist, input$lat + dist)
+  })
+
+  ## the basemap the user last chose in step 1 (leaflet reports the visible
+  ## groups as input$map_groups); the downloaded map uses the same tiles
+  map_provider <- reactive({
+    shown <- intersect(input$map_groups, base_groups)
+    if (length(shown) == 0) base_tiles[[1]] else base_tiles[[shown[1]]]
+  })
+
+  ## the selected point, numeric c(lat, lon) with lon wrapped to [-180, 180]
+  location <- reactiveVal(NULL)
+
   observeEvent(input$map_click, {
-    
-    click <- (input$map_click)
-    
-    ## adjust the longitude when user scrolls beyond +/- 180
-    while (click$lng < -180)  {
-      click$lng <- click$lng + 360
-    }
-    
-    while (click$lng > 180)  {
-      click$lng <- click$lng - 360
-    }
-    
-    ## label as north or south or east or west for chart output
-    north_south <- ifelse(click$lat > 0, "N", "S")
-    east_west <- ifelse(click$lng > 0, "E", "W")
-    
-    output$text_location <- renderText(paste("You have selected a point at ",
-                                          formatC(abs(click$lat), digits = 1, format = "f"),  "° ", north_south, 
-                                          " and ", 
-                                          formatC(abs(click$lng), digits = 1, format = "f"), "° ", east_west, ".", sep = ""))
-    
-    text <- paste(formatC(abs(click$lat), digits = 1, format = "f"),  "° ", north_south, 
-                  " & ", 
-                  formatC(abs(click$lng), digits = 1, format = "f"), "° ", east_west, sep = "")
-    
-    proxy <- leafletProxy("map")
-    
-    proxy %>% clearPopups() %>%
+    loc <- map_click_loc(input$map_click)
+    location(loc)
+
+    cell <- grid_cell(loc[1], loc[2])
+
+    ## draw at the clicked (unwrapped) longitude so the box appears where the
+    ## user clicked, even if they scrolled past the date line
+    shift <- input$map_click$lng - loc[2]
+
+    leafletProxy("map") %>%
+      clearPopups() %>%
       clearShapes() %>%
-      addPopups(click$lng, click$lat, text) %>%
-      ## add here the half-degree boundary box overlay
-      addRectangles(lng1 = round_any(click$lng, 0.5, floor),
-                    lng2 = round_any(click$lng, 0.5, ceiling),
-                    lat1 = round_any(click$lat, 0.5, floor),
-                    lat2 = round_any(click$lat, 0.5, ceiling),
-                    fill = TRUE, fillColor = "orange", fillOpacity = 0.5,
-                    weight = 2, color = "#3f7300") %>%
-      addLayersControl(
-        baseGroups = c("Open Street Map (default)", "ESRI Imagery", "ESRI Topo"),
-        options = layersControlOptions(collapsed = TRUE)
-      )
+      addPopups(input$map_click$lng, loc[1], format_latlon(loc[1], loc[2])) %>%
+      ## same look as the downloaded map: light orange fill, magenta outline
+      ## on a wider white casing so it shows on any basemap
+      addRectangles(lng1 = cell[["xmin"]] + shift, lng2 = cell[["xmax"]] + shift,
+                    lat1 = cell[["ymin"]],         lat2 = cell[["ymax"]],
+                    fill = TRUE, fillColor = "orange", fillOpacity = 0.2,
+                    weight = 3.75, color = "white", opacity = 1) %>%
+      addRectangles(lng1 = cell[["xmin"]] + shift, lng2 = cell[["xmax"]] + shift,
+                    lat1 = cell[["ymin"]],         lat2 = cell[["ymax"]],
+                    fill = FALSE, weight = 1.5, color = "#E4007C", opacity = 1)
+  })
+
+  output$text_location <- renderText({
+    req(location())
+    paste0("You have selected a point at ", format_latlon(location()[1], location()[2], " and "), ".")
+  })
+
+  ## ---- data -----------------------------------------------------------
+
+  ## a year of daily Rs, fetched when the user moves to step 2
+  dliDataGet <- eventReactive(input$page_23, {
+    req(location())
+    tryCatch({
+      d <- rs_get(location())
+      prep_dli(d)   # check now, so a data problem shows as a message, not a broken chart
+      d
+    }, error = function(e) {
+      showNotification(paste("Could not download data from NASA POWER:", conditionMessage(e)),
+                       type = "error", duration = 10)
+      req(FALSE)
+    })
+  })
+
+  dliNormalGet <- eventReactive(input$page_34, {
+    req(location())
+    tryCatch(rs_normal_get(location()), error = function(e) {
+      showNotification(paste("Could not download data from NASA POWER:", conditionMessage(e)),
+                       type = "error", duration = 10)
+      req(FALSE)
+    })
+  })
+
+  ## ---- charts ---------------------------------------------------------
+
+  output$dliChart1 <- renderPlot(make_chart_1(dliDataGet()), res = 96)
+
+  output$dliChart2 <- renderPlot(make_chart_2(dliNormalGet(), dliDataGet()), res = 96)
+
+  file_stub <- function() {
+    loc <- location()
+    sprintf("lat%s%s_lon%s%s",
+            formatC(abs(loc[1]), digits = 1, format = "f"), ifelse(loc[1] >= 0, "N", "S"),
+            formatC(abs(loc[2]), digits = 1, format = "f"), ifelse(loc[2] >= 0, "E", "W"))
+  }
+
+  output$dli_chart_3pane <- downloadHandler(
+    filename = function() paste0("dli_", file_stub(), ".png"),
+    content = function(file) {
+      save_chart_3pane(file, dliDataGet(), dliNormalGet(), location(), map_provider())
     }
   )
-  
-  ## a map to use as png in my output file
-  map_reactive <- reactive({
-    
-     click <- location()
-     
-     leaflet(height = 540, width = 540) %>% 
-      setView(lng = click[2], lat = click[1], zoom = 9) %>%
-       addProviderTiles(providers$Esri.WorldStreetMap) %>%
-      addRectangles(lng1 = round_any(click[2], 0.5, floor),
-                    lng2 = round_any(click[2], 0.5, ceiling),
-                    lat1 = round_any(click[1], 0.5, floor),
-                    lat2 = round_any(click[1], 0.5, ceiling),
-                    fill = TRUE, fillColor = "orange", fillOpacity = 0.5,
-                    weight = 2, color = "#3f7300")
-     
-  })
-  
-  location <- reactive(
-    map_click_loc(input$map_click)
-  )
-  
-  ## get a year of Rs from the location clicked on map
-  dliDataGet <- eventReactive(input$page_23, {
-   req(input$map_click) 
-    rs_get(input$map_click) 
-  }
-  )
-
- ## make a plot of a year of daily data, based on that point click
-output$dliChart1 <- renderPlot( 
-  make_chart_1(dliDataGet()), res = 96
-)
-
-output$click_loc_test <- renderTable( map_click_loc(input$map_click) )
-
- dliNormalGet <- eventReactive(input$page_34, {
-  rs_normal_get(location())
- }
- )
- 
- output$dliChart2 <- renderPlot(
-    make_chart_2(dliNormalGet(), dliDataGet()), res = 96
-  )
- 
- map_get <- eventReactive(input$user_flow == 'tab4', {
-   req(input$user_flow == 'tab4')
-
-   # id4 <- showNotification("Getting location image for chart output",
-   #                         duration = NULL, closeButton = FALSE, type = "warning")
-   # on.exit(removeNotification(id4), add = TRUE)
-
-   # png_fl = tempfile(fileext = ".png")
-   # 
-   # mapshot2(map_reactive(),
-   #          file = png_fl)
-           # vwidth = 540,
-           # vheight = 540,
-           # file = "temp.png")
-
- ##  img.background <- readPNG("temp.png", native = TRUE)
- ##  img.background <- readPNG(png_fl,
-  ##                           native = TRUE)
-
-  ## filename <- "temp.png"
-
- })
-
-
- 
-dirNS <- eventReactive(input$page_23, {
-  north_south(input$map_click)
 }
-)
-
-dirEW <- eventReactive(input$page_23, {
-  east_west(input$map_click)
-}
-)
-
-output$dli_chart_3pane <- downloadHandler(
-  
-  filename = function(){
-    paste("dli_lat", 
-          round(abs(location()[1])),
-          ifelse(location()[1] > 0, "N", "S"),
-          "_lon", 
-          round(abs(location()[2])), 
-          ifelse(location()[2] > 0, "E", "W"), 
-          ".png", sep = "")
-  },
-  
-  content = function(file){
-    save_plot(file, plot = (
-        make_chart_1( dliDataGet()) | 
-        (make_chart_2(dliNormalGet(), dliDataGet()) / make_chart_3(map_get()))
-        ) +
-        plot_layout(nrow = 1, widths = c(3, 1)) +
-        plot_annotation(theme = theme(plot.background = element_rect(fill = "#f7ffed", color = NA))), 
-        base_asp = 1.78, base_height = 1.8, scale = 4)
-  }
-)
-
-}
-

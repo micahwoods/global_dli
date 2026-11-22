@@ -1,19 +1,6 @@
-# write a function to get the
-# lat lon points of where was clicked on the map
-# so I can call that when I need it
+# lat/lon of a leaflet map click as numeric c(lat, lon),
+# with longitude wrapped to [-180, 180]
 
-map_click_loc <- function(x) {
-  
-  click <- as.numeric(x)
-  
-  # adjust the longitude when user scrolls beyond +/- 180
-  while (click[2] < -180)  {
-    click[2] <- click[2] + 360
-  }
-  
-  while (click[2] > 180)  {
-    click[2] <- click[2] - 360
-  }
-  
-  return(as.numeric(click))
+map_click_loc <- function(click) {
+  c(as.numeric(click$lat), wrap_lng(as.numeric(click$lng)))
 }

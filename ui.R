@@ -140,6 +140,8 @@ mainPanel(width = 10,
            withSpinner(plotOutput("dliChart2"), color = "#3f7300"),
            
            downloadButton("dli_chart_3pane", label = "Download DLI chart", style = atc_style),
+
+           p(tags$small("The downloaded chart shows the past year of daily DLI, the monthly DLI compared to normal, and a map of the 0.5° grid cell the data come from, drawn in the map style you chose in step 1.")),
            
            br(),
            
@@ -160,6 +162,6 @@ mainPanel(width = 10,
 
 ),
 hr(),
-tags$small("Last updated on 2024-01-23 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
+tags$small("Last updated on 2026-11-21 by", a("Micah Woods", href="https://www.micahwoods.com/", rel="external"))
 )
 )
