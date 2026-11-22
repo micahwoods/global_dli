@@ -1,13 +1,17 @@
 # make chart 3 (the rectangle on map of selected point)
 #
-# Draws the 0.5° x 0.5° NASA POWER grid cell on a basemap as a ggplot,
+# Draws the 1° x 1° NASA POWER grid cell on a basemap as a ggplot,
 # replacing the old mapview::mapshot() screenshot approach, which needed a
 # headless browser (PhantomJS / Chrome) that is no longer available.
 #
 # location: numeric c(lat, lon), as returned by map_click_loc()
 # provider: maptiles tile provider, matching the basemap chosen on the step 1
 #           map: "OpenStreetMap", "Esri.WorldImagery" or "Esri.NatGeoWorldMap"
-# zoom:     tile zoom level (8 suits a frame ~4.5 cells wide at any latitude)
+# zoom:     tile zoom level; NULL (the default) picks it from the frame size so
+#           the map is drawn from about the same number of tiles (~400 px
+#           across) anywhere: 7 near the equator, lower near the poles, where
+#           a 1° cell is much taller in Web Mercator and a fixed zoom would
+#           mean downloading hundreds of tiles
 # aspect:   width / height of the map frame; fixed so the map is the same
 #           shape in the download wherever the location is
 # zoom_out: frame width as a multiple of the cell width
@@ -16,7 +20,7 @@
 
 make_chart_3 <- function(location,
                          provider = "Esri.NatGeoWorldMap",
-                         zoom = 8,
+                         zoom = NULL,
                          aspect = 1,
                          zoom_out = 4.5,
                          cell_outline = "#E4007C",
@@ -56,27 +60,55 @@ make_chart_3 <- function(location,
     frame_h <- frame_w / aspect
     mid <- c((corners[1, 1] + corners[2, 1]) / 2, (corners[1, 2] + corners[2, 2]) / 2)
 
-    ## keep the frame inside the Web Mercator world (the date line and ~85° N/S)
+    ## keep the frame inside the Web Mercator world north-south (~85° N/S).
+    ## East-west it stays centred on the cell, even across the date line,
+    ## which is handled when the tiles are fetched below.
     world <- 20037508
-    mid[1] <- min(max(mid[1], -world + frame_w / 2), world - frame_w / 2)
     mid[2] <- min(max(mid[2], -world + frame_h / 2), world - frame_h / 2)
     frame <- c(xmin = mid[1] - frame_w / 2, xmax = mid[1] + frame_w / 2,
                ymin = mid[2] - frame_h / 2, ymax = mid[2] + frame_h / 2)
 
-    frame_sf <- sf::st_as_sfc(sf::st_bbox(frame, crs = 3857))
-    tiles <- maptiles::get_tiles(frame_sf, provider = provider, zoom = zoom,
-                                 crop = TRUE, cachedir = tempdir())
+    ## zoom at which the frame is about target_px tile pixels wide: a 256 px
+    ## tile spans 2 * world / 2^zoom metres
+    if (is.null(zoom)) {
+      target_px <- 400
+      zoom <- round(log2(target_px * 2 * world / (256 * frame_w)))
+      zoom <- min(max(zoom, 1), 10)
+    }
 
-    ## turn the tiles into a plain raster image
-    rgb_array <- terra::as.array(tiles)[, , 1:3] / 255
-    rgb_array[is.na(rgb_array)] <- 1
-    tile_img <- as.raster(rgb_array)
-    e <- as.vector(terra::ext(tiles))
+    ## the tiles as plain raster images, each with its x offset. A frame that
+    ## crosses the date line is fetched in two parts: the part inside the
+    ## world, and the part beyond the line, fetched from the other side of the
+    ## world and shifted back next to it.
+    parts <- list(list(xmin = max(frame[["xmin"]], -world),
+                       xmax = min(frame[["xmax"]], world), shift = 0))
+    if (frame[["xmin"]] < -world)
+      parts <- c(parts, list(list(xmin = frame[["xmin"]] + 2 * world, xmax = world,
+                                  shift = -2 * world)))
+    if (frame[["xmax"]] > world)
+      parts <- c(parts, list(list(xmin = -world, xmax = frame[["xmax"]] - 2 * world,
+                                  shift = 2 * world)))
+
+    tile_layers <- lapply(parts, function(p) {
+      bb <- sf::st_bbox(c(xmin = p$xmin, xmax = p$xmax,
+                          ymin = frame[["ymin"]], ymax = frame[["ymax"]]), crs = 3857)
+      ## one cache folder per bbox: maptiles 0.13.0 builds its cache key from
+      ## only the first bbox value (xmin), so two frames with the same left
+      ## edge (e.g. both starting at the date line) would share a cached image
+      cachedir <- file.path(tempdir(), "maptiles",
+                            paste(c(round(bb), zoom), collapse = "_"))
+      tiles <- maptiles::get_tiles(sf::st_as_sfc(bb), provider = provider, zoom = zoom,
+                                   crop = TRUE, cachedir = cachedir)
+      rgb_array <- terra::as.array(tiles)[, , 1:3, drop = FALSE] / 255
+      rgb_array[is.na(rgb_array)] <- 1
+      e <- as.vector(terra::ext(tiles))
+      annotation_raster(as.raster(rgb_array),
+                        xmin = e[["xmin"]] + p$shift, xmax = e[["xmax"]] + p$shift,
+                        ymin = e[["ymin"]], ymax = e[["ymax"]])
+    })
 
     ggplot() +
-      annotation_raster(tile_img,
-                        xmin = e[["xmin"]], xmax = e[["xmax"]],
-                        ymin = e[["ymin"]], ymax = e[["ymax"]]) +
+      tile_layers +
       ## cell: light fill, then the outline as a coloured line on a wider white
       ## one, so it stands out on pale maps and dark satellite imagery alike
       annotate("rect",

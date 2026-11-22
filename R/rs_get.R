@@ -7,7 +7,8 @@
 #   Rs and this location's PAR/Rs ratio at the same time of year, one year
 #   earlier, so PAR is needed back to about 364 + 90 + 365 + 30 days ago.
 #
-# location: numeric c(lat, lon), as returned by map_click_loc()
+# location: numeric c(lat, lon), as returned by map_click_loc(); the data are
+#           requested at the centre of its 1° grid cell (see R/grid_cell.R)
 
 rs_get <- function(location) {
 
@@ -16,7 +17,7 @@ rs_get <- function(location) {
   on.exit(removeNotification(id), add = TRUE)
 
   get_power(community = "AG",
-            lonlat = c(location[2], location[1]),
+            lonlat = rev(unname(cell_centre(location))),   # c(lon, lat) of the 1° cell centre
             pars = c("ALLSKY_SFC_SW_DWN", "ALLSKY_SFC_PAR_TOT"),
             temporal_api = "daily",
             dates = c(today() - days(900), today() - days(1)))

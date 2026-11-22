@@ -1,4 +1,11 @@
-## chart 2: monthly average DLI for the past year vs the climatological normal
+## chart 2: monthly average DLI for the past 12 full months vs the
+## climatological normal
+##
+## The months are the 12 most recent calendar months that the data cover
+## completely, so the month the data end in is left out unless the data run
+## to its last day. Because POWER lags about a week, early in a month the
+## previous month may not be complete yet either; it then joins the chart
+## once the data reach its last day.
 
 make_chart_2 <- function(normal_data, downloaded_power_data) {
 
@@ -6,7 +13,11 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
                           duration = NULL, closeButton = FALSE, type = "warning")
   on.exit(removeNotification(id3), add = TRUE)
 
-  d3 <- prep_dli(downloaded_power_data)
+  ## 12 full months plus a partial month can span up to 397 days, more than
+  ## the 364 days that chart 1 uses
+  d3 <- prep_dli(downloaded_power_data, n_days = 400)
+  months <- last_full_months(d3$date, n = 12)
+  d3 <- d3[d3$date >= months[["start"]] & d3$date <= months[["end"]], ]
 
   lat <- as.numeric(normal_data$LAT[1])
   lon <- as.numeric(normal_data$LON[1])
@@ -32,23 +43,23 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
   dli_monthly_plot <- dli_monthly %>%
     left_join(select(normalDLI, monthNum, dli_climatology), by = c("MM" = "monthNum"))
 
-  ## past year vs normal, both as DLI
+  ## past 12 full months vs normal, both as DLI averaged over all the days
   normal_annual <- as.numeric(normal_data$ANN[1]) * mol_per_MJ_par
   past_annual   <- mean(d3$dli)
   percentDiff   <- abs(past_annual - normal_annual) / normal_annual * 100
   more_or_less  <- if (past_annual >= normal_annual) "above" else "below"
 
-  label_norm <- sprintf("Green circles: past year, average DLI %s, %s%% %s normal.\nOrange triangles: climatological normal DLI.",
+  label_norm <- sprintf("Green circles: %s to %s, average DLI %s, %s%% %s normal.\nOrange triangles: climatological normal DLI.",
+                        format(months[["start"]], "%b %Y"), format(months[["end"]], "%b %Y"),
                         formatC(past_annual, digits = 1, format = "f"),
                         formatC(percentDiff, digits = 1, format = "f"),
                         more_or_less)
 
   position_hjust <- function(order) ifelse(order < 4, 0, ifelse(order > 8, 1, 0.5))
 
-  ## min and max months over the past year, excluding incomplete months
-  complete <- filter(dli_monthly_plot, n >= 28)
-  max_month <- slice_max(complete, order_by = avg_last_year, with_ties = FALSE, n = 1)
-  min_month <- slice_min(complete, order_by = avg_last_year, with_ties = FALSE, n = 1)
+  ## min and max months (all 12 are complete months)
+  max_month <- slice_max(dli_monthly_plot, order_by = avg_last_year, with_ties = FALSE, n = 1)
+  min_month <- slice_min(dli_monthly_plot, order_by = avg_last_year, with_ties = FALSE, n = 1)
 
   label_max <- sprintf("Max average DLI of\n%s in %s %s",
                        formatC(max_month$avg_last_year, digits = 1, format = "f"),
@@ -79,7 +90,7 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
           plot.background = element_rect(fill = app_bg, color = NA)) +
     labs(y = expression(paste("Mean DLI, mol ", m^{-2}, " ", d^{-1})),
          title = "Average DLI by month",
-         subtitle = paste("at", format_latlon(lat, lon)),
+         subtitle = paste("in the 1° grid cell", format_cell(lat, lon, compact = TRUE)),
          caption = label_norm) +
     scale_y_continuous(limits = c(0, NA),
                        breaks = seq(0, 70, 10),
@@ -94,4 +105,18 @@ make_chart_2 <- function(normal_data, downloaded_power_data) {
              family = "Roboto Condensed", colour = "#1b9e77", alpha = 0.4, size = 2.5,
              label = label_min, label.size = 0) 
   
+}
+
+# first and last day of the n most recent calendar months that dates covers
+# completely, as c(start = , end = ) Dates. The last month is the month of the
+# last date if that is the month's last day, otherwise the month before.
+last_full_months <- function(dates, n = 12) {
+  last_day <- max(dates)
+  end   <- floor_date(last_day + days(1), "month") - days(1)
+  start <- floor_date(end, "month") %m-% months(n - 1)
+  if (min(dates) > start) {
+    stop(sprintf("need data from %s for %d full months, but the data start on %s",
+                 format(start), n, format(min(dates))))
+  }
+  c(start = start, end = end)
 }

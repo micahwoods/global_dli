@@ -7,7 +7,7 @@ The units are moles of photons per square meter per day --- mol m<sup>-2</sup> d
 
 ### Where these data come from
 
-The [NASA POWER](https://power.larc.nasa.gov/docs/methodology/communities/ag/) agroclimatology dataset provides satellite data of many useful solar and meteorological parameters on a 0.5° x 0.5° grid. One of these is **all sky surface total PAR** (from CERES SYN1deg), in megajoules of PAR per square meter per day, MJ m<sup>-2</sup> d<sup>-1</sup>.
+The [NASA POWER](https://power.larc.nasa.gov/docs/methodology/communities/ag/) agroclimatology dataset provides satellite data of many useful solar and meteorological parameters. One of these is **all sky surface total PAR** (from CERES SYN1deg), which, like the other solar parameters, is on a 1° x 1° grid with cell edges on whole degrees of latitude and longitude. Every point in the same 1° cell, such as anywhere from 13° to 14° N and 100° to 101° E, gets the same data. PAR is given in megajoules of PAR per square meter per day, MJ m<sup>-2</sup> d<sup>-1</sup>.
 
 To convert PAR from energy to photons, I multiply it by 4.48 mol of photons per MJ of PAR, the conversion used by [Faust and Logan (2018)](https://dx.doi.org/10.21273/HORTSCI13144-18). So the DLI in this app is the NASA POWER PAR multiplied by 4.48. The climatological normal DLI is calculated the same way, from the NASA POWER PAR climatology (2001–2025).
 

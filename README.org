@@ -4,14 +4,8 @@ The global DLI app summarizes the past year of daily light integral (DLI) data f
 
 [[https://asianturfgrass.shinyapps.io/global_dli/]]
 
-The app uses the [[https://docs.ropensci.org/nasapower/index.html][nasapower]] R package to get global solar radiation data from the [[https://power.larc.nasa.gov/][NASA POWER]] agroclimatology dataset.
+The app uses the [[https://docs.ropensci.org/nasapower/index.html][nasapower]] R package to get PAR and global solar radiation data from the [[https://power.larc.nasa.gov/][NASA POWER]] agroclimatology dataset.
 
 More information is available in the [[dli_details.md][dli_details.md]] file.
 
 Please report any issues at [[https://github.com/micahwoods/global_dli/issues]]. 
-
-** Update 2024-01-23
-
-The map with a box overlay showing the area checked has been removed, for now at least.
-
-The phantomJS headless browser had been used, but seems inactive or unavailable now so it was not working. I tried to move to the webshot2 and mapshot2 packages/functions, but I couldn't get it to work. So for now I leave it at that.

@@ -19,7 +19,7 @@ server <- function(input, output, session) {
     if (is.null(location())) {
       showModal(modalDialog(
         title = "Please select a location on the map first",
-        "Click the map to choose a 0.5° by 0.5° grid from which satellite data will be downloaded.",
+        "Click the map to choose the 1° by 1° grid cell from which satellite data will be downloaded.",
         easyClose = TRUE,
         footer = NULL
       ))
@@ -92,7 +92,8 @@ server <- function(input, output, session) {
 
   output$text_location <- renderText({
     req(location())
-    paste0("You have selected a point at ", format_latlon(location()[1], location()[2], " and "), ".")
+    paste0("You have selected a point at ", format_latlon(location()[1], location()[2], " and "),
+           ". The data come from the 1° grid cell ", format_cell(location()[1], location()[2]), ".")
   })
 
   ## ---- data -----------------------------------------------------------

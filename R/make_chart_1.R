@@ -10,6 +10,7 @@ make_chart_1 <- function(downloaded_power_data) {
   d3$dliColour <- dli_class(d3$dli)
   d3$dayCount  <- seq_len(nrow(d3))
 
+  ## LAT / LON echo the requested point, the cell centre (see rs_get())
   lat <- d3$LAT[1]
   lon <- d3$LON[1]
 
@@ -74,7 +75,7 @@ make_chart_1 <- function(downloaded_power_data) {
           plot.background = element_rect(fill = app_bg, color = NA)) +
     labs(y = expression(paste("DLI, mol ", m^{-2}, " ", d^{-1})),
          title = "Daily light integral (DLI)",
-         subtitle = paste0("for the past 52 weeks at ", format_latlon(lat, lon),
+         subtitle = paste0("for the past 52 weeks in the 1° grid cell ", format_cell(lat, lon),
                            ". Circles are daily DLI; horizontal bars are weekly averages."),
          caption = "These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate Applied\nScience Program: power.larc.nasa.gov using the 'nasapower' R package by Adam Sparks. This chart generated at asianturfgrass.shinyapps.io/global_dli/") +
     annotate("label", x = minDay$date, hjust = min_hjust, y = minDay$dli + 9, alpha = 0.4,

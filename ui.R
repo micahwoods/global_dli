@@ -85,7 +85,7 @@ mainPanel(width = 10,
            
            tags$ul(
              tags$li("Quick app summary: generates a summary chart of PAR for the past year at any location."), 
-             tags$li("This app gets satellite data of global solar radiation on 0.5° latitude by 0.5° longitude grid from the",
+             tags$li("This app gets satellite data of PAR and global solar radiation on a 1° latitude by 1° longitude grid from the",
                      a("NASA POWER Agroclimatology dataset", href="https://power.larc.nasa.gov/"),
                      "using the",
                      tags$code(tags$a("nasapower", href='https://docs.ropensci.org/nasapower/index.html')),
@@ -102,7 +102,7 @@ mainPanel(width = 10,
           
           tags$h4("Step 1"), 
           
-          p("Find the location on the map you'd like to check. Click the map at that point to mark the location. A transparent orange rectangle will appear over the 0.5° x 0.5° grid that includes this location."),
+          p("Find the location on the map you'd like to check. Click the map at that point to mark the location. A transparent orange rectangle will appear over the 1° x 1° grid cell that includes this location. The cell edges are on whole degrees of latitude and longitude."),
           
           leafletOutput("map"),
           
@@ -141,7 +141,7 @@ mainPanel(width = 10,
            
            downloadButton("dli_chart_3pane", label = "Download DLI chart", style = atc_style),
 
-           p(tags$small("The downloaded chart shows the past year of daily DLI, the monthly DLI compared to normal, and a map of the 0.5° grid cell the data come from, drawn in the map style you chose in step 1.")),
+           p(tags$small("The downloaded chart shows the past 52 weeks of daily DLI, the monthly DLI for the past 12 full months compared to normal, and a map of the 1° grid cell the data come from, drawn in the map style you chose in step 1.")),
            
            br(),
            
