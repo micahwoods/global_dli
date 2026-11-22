@@ -21,6 +21,7 @@ library(maptiles)         # basemap tiles for the location map (make_chart_3)
 library(shinycssloaders)
 library(ggpp)            # geom_table for annotate(geom = "table")
 library(tibble)
+library(markdown)         # needed by shiny::includeMarkdown() (dli_details.md)
 
 atc_style  <- "color: #fff; background-color: #3f7300; border-color: #fff"
 atc2_style <- "color: #fff; background-color: #730B29; border-color: #fff"
