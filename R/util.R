@@ -19,7 +19,7 @@ library(shinyFeedback)
 library(magick)
 library(maptiles)         # basemap tiles for the location map (make_chart_3)
 library(shinycssloaders)
-library(ggpmisc)
+library(ggpp)            # geom_table for annotate(geom = "table")
 library(tibble)
 
 atc_style  <- "color: #fff; background-color: #3f7300; border-color: #fff"
